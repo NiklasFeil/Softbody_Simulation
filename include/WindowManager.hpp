@@ -14,8 +14,7 @@ class WindowManager {
 
     void createWindow(unsigned width, unsigned height, const char* title);
     GLFWwindow* getWindow();
-    void setViewport(unsigned x, unsigned y, unsigned width, unsigned height); 
-    void loadGLLoader();
+    void setViewport(unsigned x, unsigned y, unsigned width, unsigned height);
     void syncViewportToWindow();
     void desyncViewportToWindow();
 };

@@ -2,7 +2,7 @@ workspace("Softbody Simulation Workspace")
 configurations({ "Debug", "Release" })
 location("build")
 language("C++")
-cppdialect("C++20")
+cppdialect("C++23")
 architecture("x86_64")
 
 project("Softbody Simulation")

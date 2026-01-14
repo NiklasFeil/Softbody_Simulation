@@ -44,6 +44,12 @@ void WindowManager::createWindow(unsigned width, unsigned height, const char* ti
   }
   
   glfwMakeContextCurrent(m_window.get());
+
+  std::cout << "Initializing GLAD..." << std::endl;
+
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    throw std::runtime_error("Failed to initialize GLAD");  
+  }
 }
 
 GLFWwindow* WindowManager::getWindow() {
@@ -52,12 +58,6 @@ GLFWwindow* WindowManager::getWindow() {
 
 void WindowManager::setViewport(unsigned x, unsigned y, unsigned width, unsigned height) {
   glViewport(x, y, width, height); 
-}
-
-void WindowManager::loadGLLoader() {
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    throw std::runtime_error("Failed to initialize GLAD");  
-  }
 }
 
 void WindowManager::syncViewportToWindow() {
