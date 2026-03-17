@@ -14,6 +14,7 @@ class Shader {
         ~Shader();
 
         GLboolean compile_shader();
-        GLuint get_id();
+        GLuint get_id() const;
 
+        static const char* s_get_source_code(const char* path);
 };

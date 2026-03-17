@@ -7,29 +7,29 @@ Shader::Shader() {
 }
 
 Shader::Shader(GLuint shader_type, const char* source_code) {
-    this->m_shader_type = shader_type;
-    this->m_source_code = source_code;    
-    this->m_id = glCreateShader(shader_type);
-    glShaderSource(this->m_id, 1, &source_code, NULL);
+    m_shader_type = shader_type;
+    m_source_code = source_code;    
+    m_id = glCreateShader(shader_type);
+    glShaderSource(m_id, 1, &source_code, NULL);
 }
 
 Shader::~Shader() {
     std::cout << "Shader deleted: " << m_id << " of type " << m_shader_type << std::endl;
-    glDeleteShader(this->m_id);
+    glDeleteShader(m_id);
 }
 
 GLboolean Shader::compile_shader() {
 
     // Compile shader
-    glCompileShader(this->m_id);
+    glCompileShader(m_id);
 
     // Check if compilation worked
     int success;
     char infoLog[512];
-    glGetShaderiv(this->m_id, GL_COMPILE_STATUS, &success);
+    glGetShaderiv(m_id, GL_COMPILE_STATUS, &success);
 
     if (!success) {
-        glGetShaderInfoLog(this->m_id, 512, NULL, infoLog);
+        glGetShaderInfoLog(m_id, 512, NULL, infoLog);
         std::cerr << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
@@ -37,6 +37,10 @@ GLboolean Shader::compile_shader() {
     return success;
 }
 
-GLuint Shader::get_id() {
-    return this->m_id;
+GLuint Shader::get_id() const {
+    return m_id;
+}
+
+const char* Shader::s_get_source_code(const char* path) {
+
 }

@@ -18,13 +18,8 @@ App::~App() {
 }
 
 void App::run() {
-    std::cout << "App::run()" << std::endl;
-
-    std::println("Getting window");
 
     GLFWwindow* window = m_window_manager->getWindow();
-
-    std::println("Adding on press behaviour");
 
     m_input_manager->add_on_press_behaviour(
         GLFW_KEY_ESCAPE, 
