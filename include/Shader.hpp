@@ -4,7 +4,7 @@
 
 class Shader {
     private:
-        const char* m_source_code;
+        std::string m_source_code;
         GLuint m_id;
         GLuint m_shader_type;
 
@@ -15,6 +15,4 @@ class Shader {
 
         GLboolean compile_shader();
         GLuint get_id() const;
-
-        static const char* s_get_source_code(const char* path);
 };

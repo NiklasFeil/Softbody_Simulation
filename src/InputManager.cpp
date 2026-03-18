@@ -3,12 +3,30 @@
 #include <iostream>
 #include <format>
 
-InputManager::InputManager() {
-
+InputManager::InputManager(WindowManager* window_manager) 
+: m_window_manager(window_manager) {
+    
 }
 
 InputManager::~InputManager() {
     m_actions_on_press.clear();
+    s_instance = nullptr;
+}
+
+InputManager* InputManager::construct_instance(WindowManager* window_manager) {
+    std::cout << "Checking InputManager instance..." << std::endl;
+    if (s_instance == nullptr) {
+        std::cout << "Creating InputManager instance..." << std::endl;
+        s_instance = new InputManager(window_manager);
+    }
+    return s_instance;
+}
+
+InputManager* InputManager::get_instance() {
+    if (s_instance == nullptr) {
+        std::cerr << "When get_instance() of InputManager was called, there was no constructed instance." << std::endl;
+    }
+    return s_instance;
 }
 
 void InputManager::add_on_press_behaviour(int key, std::function<void()> added_behaviour, Global::Input::CallbackBehaviour cb) {

@@ -5,28 +5,21 @@
 #include <GLAD/glad.h>
 
 Renderer::Renderer() {
-    const char* vertex_shader_source = "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;\n"
-        "void main()\n"
-        "{\n"
-        " gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-        "}\0";
-
-    const char* fragment_shader_source = "#version 330 core\n"
-        "out vec4 FragColor;\n"
-        "void main()\n"
-        "{\n"
-        "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-        "}\0";
 
     // Shaders created on the stack and deleted after this scope ends. They are stored in a program before they are deleted, after which they are no longer needed.
-    Shader basic_vertex_shader(GL_VERTEX_SHADER, vertex_shader_source);
-    Shader basic_fragment_shader(GL_FRAGMENT_SHADER, fragment_shader_source);
+    Shader basic_vertex_shader(GL_VERTEX_SHADER, "../shaders/vertex/basic.glsl");
+    Shader basic_fragment_shader(GL_FRAGMENT_SHADER, "../shaders/fragment/basic.glsl");
     basic_vertex_shader.compile_shader();
     basic_fragment_shader.compile_shader();
 
     m_basic_shader_program = std::make_unique<ShaderProgram>(basic_vertex_shader, basic_fragment_shader);    
     m_basic_shader_program->link_program();
+
+    m_view = glm::mat4(1.0f);
+    m_view = glm::translate(m_view, glm::vec3(0.0f, 0.0f, -3.0f));
+    m_model = glm::mat4(1.0f);
+    m_model = glm::rotate(m_model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    m_projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 }
 
 Renderer::~Renderer() {
@@ -37,7 +30,7 @@ void Renderer::render_shape(const Shape& shape) {
 
 }
 
-void Renderer::render(const Scene* scene) {
+void Renderer::render(Camera* camera, const Scene* scene) {
         
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -46,7 +39,16 @@ void Renderer::render(const Scene* scene) {
     GLuint vao = triangle->get_vao();
 
     glUseProgram(m_basic_shader_program->get_id());
+    int modelLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "model");
+    int viewLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "view");
+    int projectionLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "projection");
+
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m_model));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera->get_view()));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(m_projection));
+
     glBindVertexArray(vao);
     //glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
