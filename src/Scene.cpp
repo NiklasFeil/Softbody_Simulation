@@ -1,5 +1,6 @@
 #include "Scene.hpp"
 #include <memory>
+#include <glm/ext.hpp>
 
 Scene::Scene() {
 
@@ -38,7 +39,7 @@ Scene::Scene() {
     
 
     m_solids.push_back(std::make_unique<Solid>(vertices, indices, glm::vec3(0.0f, -0.5f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.5f, 5.0f))); 
-    m_sb_cube = std::make_unique<SoftbodyCube>(vertices, indices, glm::vec3(0.0f, 2.0f, 0.0f));
+    m_sb_cube = std::make_unique<SoftbodyCube>(4, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), 2);
 }
 
 Scene::~Scene() {

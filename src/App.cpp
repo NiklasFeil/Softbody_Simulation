@@ -33,7 +33,7 @@ void App::run() {
     double curr_time;
     double down_time = 0.0f;;
 
-    std::println("Starting while loop");
+    std::cout << "Starting while loop" << std::endl;
     while(!glfwWindowShouldClose(window)) {
 
         m_gui->start_frame();
@@ -46,7 +46,10 @@ void App::run() {
 
         if(m_gui->reset) {
             m_scene = std::make_unique<Scene>();
-            m_gui->reset = false;
+            GUI* old_gui = m_gui.release();
+            delete old_gui;
+            m_gui = std::make_unique<GUI>(m_window_manager->getWindow(), m_scene.get());
+            continue;
         }
 
         prev_time = curr_time;

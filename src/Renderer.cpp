@@ -36,6 +36,7 @@ void Renderer::render(Camera* camera, const Scene* scene) {
 
     SoftbodyCube* sb_cube = scene->get_sb_cube();
     GLuint sb_cube_vao = sb_cube->get_vao();
+    unsigned grid_dim = sb_cube->get_grid_dim();
 
     glUseProgram(m_basic_shader_program->get_id());
     int modelLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "model");
@@ -54,5 +55,8 @@ void Renderer::render(Camera* camera, const Scene* scene) {
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f))); // TODO: Implement a model matrix into softbody cube that considers m_positions and m_vertices
     glBindVertexArray(sb_cube_vao);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    glPointSize(10.0f);
+    glDrawArrays(GL_POINTS, 0, grid_dim * grid_dim * grid_dim);
+    //glDrawElements(GL_POINTS, 36, GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }

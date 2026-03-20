@@ -6,6 +6,8 @@
 
 GUI::GUI(GLFWwindow* window, Scene* scene)
 : m_scene(scene) {
+
+    std::cout << "Creating GUI object" << std::endl;
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -19,6 +21,7 @@ GUI::GUI(GLFWwindow* window, Scene* scene)
 }
 
 GUI::~GUI() {
+    std::cout << "Destroying GUI object" << std::endl;
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

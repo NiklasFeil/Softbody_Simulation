@@ -1,5 +1,11 @@
 workspace("Softbody Simulation Workspace")
 configurations({ "Debug", "Release" })
+filter("configurations:Debug")
+    symbols "On"
+    optimize "Off"
+filter("configurations:Release")
+    optimize "On"
+    symbols "Off"
 location("build")
 language("C++")
 cppdialect("C++23")

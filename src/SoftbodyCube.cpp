@@ -2,9 +2,209 @@
 #include <cstring>
 #include <iostream>
 
-SoftbodyCube::SoftbodyCube(std::vector<float> vertices, std::vector<int> indices, glm::vec3 center)
-: m_vertices(vertices), m_indices(indices), m_center(center) {
+SoftbodyCube::SoftbodyCube(unsigned grid_dim, glm::vec3 center, glm::vec3 angles, double size)
+: m_grid_dim(grid_dim) {
     
+    // SIMULATION
+
+    Eigen::Vector3d e_center;
+    e_center << center.x, center.y, center.z;
+
+    Eigen::AngleAxisd roll_angle(angles.x, Eigen::Vector3d::UnitX());
+    Eigen::AngleAxisd pitch_angle(angles.y, Eigen::Vector3d::UnitY());
+    Eigen::AngleAxisd yaw_angle(angles.z, Eigen::Vector3d::UnitZ());
+
+    Eigen::Matrix3d e_rotation = (yaw_angle * pitch_angle * roll_angle).matrix();
+
+    m_num_elements = 3 * m_grid_dim * m_grid_dim * m_grid_dim;
+    // Construct m_positions first
+    m_positions = Eigen::VectorXd::Zero(m_num_elements);
+    double step = 1.0 / (m_grid_dim - 1);
+    for (int k = 0; k < m_grid_dim; ++k) {
+        for (int j = 0; j < m_grid_dim; ++j) {
+            for (int i = 0; i < m_grid_dim; ++i) {
+                double x = -size/2.0 + i * step;
+                double y = -size/2.0 + j * step;
+                double z = -size/2.0 + k * step;
+                //double x = (center.x - size/2.0) + i * step;
+                //double y = (center.y - size/2.0) + j * step;
+                //double z = (center.z - size/2.0) + k * step;
+
+                m_positions.segment(3 * get_index(i, j, k), 3) = e_center + e_rotation * Eigen::Vector3d(x, y, z);
+            }
+        }
+    }
+
+    m_velocities = Eigen::VectorXd::Zero(m_num_elements);
+
+    // Construct springs. 
+    Eigen::Vector3d difference;
+    double length;
+    int first, second;
+    for (int k = 0; k < m_grid_dim; ++k) {
+        for (int j = 0; j < m_grid_dim; ++j) {
+            for (int i = 0; i < m_grid_dim; ++i) {
+                // Structural Springs
+                if (i + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i+1, j, k);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                    
+                }
+                if (j + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i, j+1, k);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                    
+                }
+                if (k + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i, j, k+1);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                    
+                }
+
+                // Shear Springs
+                if (i + 1 < m_grid_dim && j + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i+1, j+1, k);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                }
+                if (j + 1 < m_grid_dim && k + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i, j+1, k+1);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                }
+                if (i + 1 < m_grid_dim && k + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i+1, j, k+1);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                }
+                if (i - 1 >= 0 && j + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i-1, j+1, k);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                }
+                if (j - 1 >= 0 && k + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i, j-1, k+1);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                }
+                if (i - 1 >= 0 && k + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i-1, j, k+1);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                }
+
+                if (i + 1 < m_grid_dim && j + 1 < m_grid_dim && k + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i+1, j+1, k+1);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                }
+                if (i - 1 >= 0 && j + 1 < m_grid_dim && k + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i-1, j+1, k+1);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                }
+                if (i + 1 < m_grid_dim && j - 1 >= 0 && k + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i+1, j-1, k+1);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                }
+                if (i + 1 < m_grid_dim && j + 1 < m_grid_dim && k - 1 >= 0) {
+                    first = get_index(i, j, k);
+                    second = get_index(i+1, j+1, k-1);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                }
+                if (i - 1 >= 0 && j - 1 >= 0 && k + 1 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i-1, j-1, k+1);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});   
+                }
+
+                // Bend Springs
+                if (i + 2 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i+2, j, k);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                    
+                }
+                if (j + 2 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i, j+2, k);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                    
+                }
+                if (k + 2 < m_grid_dim) {
+                    first = get_index(i, j, k);
+                    second = get_index(i, j, k+2);
+                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
+                    if (first < second)
+                        m_springs.push_back({first, second, length});
+                    
+                }
+            }
+        }
+    }
+
+/*
+    for (auto& spring: m_springs) {
+        std::cout << "(" << std::get<0>(spring) << ", " << std::get<1>(spring) << ", " << std::get<2>(spring) << ")" << std::endl;
+    }
+*/
+    std::cout << "Number of springs: " << m_springs.size() << std::endl;
+
+    // All particles are set to a mass of 1.
+    // TODO: Maybe make this changable in the future
+    m_inverse_mass = Eigen::SparseMatrix<double>(m_num_elements, m_num_elements);
+    m_inverse_mass.setIdentity();
+
+    m_gravity = Eigen::VectorXd::Zero(m_num_elements);
+    for (size_t i = 1; i < m_num_elements; i += 3) {
+        m_gravity(i) = -9.81;
+    }
+
+    // RENDERING
+
+    m_vertices.reserve(m_num_elements);
+    m_indices.reserve(m_num_elements);
+
+    for (auto val: m_positions) {
+        m_vertices.push_back(val);
+    }
+
     glGenVertexArrays(1, &m_vao);
     glGenBuffers(1, &m_vbo);
     glGenBuffers(1, &m_ebo);
@@ -22,38 +222,8 @@ SoftbodyCube::SoftbodyCube(std::vector<float> vertices, std::vector<int> indices
 
     glBindVertexArray(0); // Unbind VAO again
 
-    // Construct m_positions from m_vertices
-    for (size_t i = 0; i < m_vertices.size(); i += 1) {
-        m_positions(i) = m_vertices[i];
-    }
-
-    // Translate positions so set center aligns
-    for (size_t i = 0; i < m_positions.size(); i += 3) {
-        m_positions(i  ) += m_center.x;
-        m_positions(i+1) += m_center.y;
-        m_positions(i+2) += m_center.z;
-    }
-
-    update_vbo();
-
-    // Construct springs. Every corner is connected to each other.
-    Eigen::Vector3d difference;
-    double length;
-    for(size_t i = 0; i < 8; i++) {
-        for (size_t j = i + 1; j < 8; j++) {
-            difference = m_positions.segment(i * 3, 3) - m_positions.segment(j * 3, 3);
-            length = difference.norm();
-            m_springs.emplace_back(i, j, length);
-        }
-    }
-
-    // All particles are set to a mass of 1.
-    // TODO: Maybe make this changable in the future
-    m_inverse_mass.setIdentity();
-
-    for (size_t i = 1; i < m_num_elements; i += 3) {
-        m_gravity(i) = -9.81;
-    }
+    
+    
 }
 
 SoftbodyCube::~SoftbodyCube() {
@@ -135,4 +305,12 @@ void SoftbodyCube::simulate_mass_spring(double dt) {
     m_velocities += dv;
 
     update_vbo();
+}
+
+size_t SoftbodyCube::get_index(size_t i, size_t j, size_t k) {
+    return i + m_grid_dim * j + m_grid_dim * m_grid_dim * k;
+}
+
+unsigned SoftbodyCube::get_grid_dim() {
+    return m_grid_dim;
 }
