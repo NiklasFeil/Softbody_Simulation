@@ -1,5 +1,5 @@
 #pragma once
-#include "Shape.hpp"
+#include "Object.hpp"
 #include "Scene.hpp"
 #include "ShaderProgram.hpp"
 #include <Camera.hpp>
@@ -11,7 +11,7 @@
 
 class Renderer {
     private:
-        void render_shape(const Shape& shape);
+        void render_object(const Object& object);
         std::unique_ptr<ShaderProgram> m_basic_shader_program;
 
         glm::mat4 m_projection;
@@ -22,5 +22,4 @@ class Renderer {
         Renderer();
         ~Renderer();
         void render(Camera* camera, const Scene* scene);
-        void render_test(GLuint vao, Shape* shape);
 };

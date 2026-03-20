@@ -5,15 +5,15 @@ Scene::Scene() {
 
     // vertices must be on the heap, otherwise it would be deleted and then the VAO would not work
     std::vector<float> vertices = {
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
 
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
     };
 
     std::vector<int> indices = {
@@ -36,13 +36,19 @@ Scene::Scene() {
         7, 2, 3
     };
     
-    m_shapes.push_back(std::make_unique<Shape>(vertices, indices)); 
+
+    m_solids.push_back(std::make_unique<Solid>(vertices, indices, glm::vec3(0.0f, -0.5f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.5f, 5.0f))); 
+    m_sb_cube = std::make_unique<SoftbodyCube>(vertices, indices, glm::vec3(0.0f, 2.0f, 0.0f));
 }
 
 Scene::~Scene() {
     
 }
 
-Shape* Scene::get_shape(size_t idx) const {
-    return m_shapes[idx].get();
+Solid* Scene::get_solid(size_t idx) const {
+    return m_solids[idx].get();
+}
+
+SoftbodyCube* Scene::get_sb_cube() const {
+    return m_sb_cube.get();
 }

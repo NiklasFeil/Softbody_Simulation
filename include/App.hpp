@@ -4,6 +4,7 @@
 #include "InputManager.hpp"
 #include "Renderer.hpp"
 #include "Scene.hpp"
+#include "GUI.hpp"
 #include <memory>
 
 class App {
@@ -13,6 +14,7 @@ class App {
     std::unique_ptr<Renderer> m_renderer;
     std::unique_ptr<Scene> m_scene;
     std::unique_ptr<Camera> m_camera;
+    std::unique_ptr<GUI> m_gui;
 
   public:
     App();

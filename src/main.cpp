@@ -3,11 +3,9 @@
 
 int main() {
 
-  App* app = new App();
+  App app;
 
-  app->run();
-
-  delete app;
+  app.run();
 
   return 0;
 }

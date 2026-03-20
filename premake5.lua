@@ -12,9 +12,11 @@ files({
 	"src/*.cpp",
 	"src/*.c",
 	"libs/GLAD/*.c",
+	"include_dependencies/imgui/*.cpp"
 })
 includedirs("include")
 includedirs("include_dependencies")
+
 libdirs({ "libs/GLFW" })
 links("glfw3")
 

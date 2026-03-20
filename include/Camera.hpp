@@ -19,16 +19,18 @@ class Camera {
         float m_yaw;
 
         glm::mat4 m_view;
+        glm::mat4 m_projection;
 
         float m_phi;
         float m_theta;
-        const float m_radius = 10.0f;
+        float m_radius = 10.0f;
 
     public:
-        Camera(glm::vec3 pos, glm::vec3 target);
+        Camera();
         ~Camera();
 
         glm::mat4 get_view();
+        glm::mat4 get_projection();
         void update();
 
 
