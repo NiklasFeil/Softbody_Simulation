@@ -5,14 +5,15 @@
 
 App::App() {
 
+    unsigned curr_sim = 0;
     m_window_manager = std::make_unique<WindowManager>();
-    m_window_manager->createWindow(800, 600, "Softbody Simulation");
+    m_window_manager->createWindow(1200, 800, "Softbody Simulation");
     m_window_manager->syncViewportToWindow();
     m_input_manager = InputManager::construct_instance(m_window_manager.get());
     m_renderer = std::make_unique<Renderer>();
-    m_scene = std::make_unique<Scene>();
+    m_scene = std::make_unique<Scene>(curr_sim);
     m_camera = std::make_unique<Camera>();
-    m_gui = std::make_unique<GUI>(m_window_manager->getWindow(), m_scene.get());
+    m_gui = std::make_unique<GUI>(m_window_manager->getWindow(), m_scene.get(), curr_sim);
 }
 
 App::~App() {
@@ -45,10 +46,11 @@ void App::run() {
         }
 
         if(m_gui->reset) {
-            m_scene = std::make_unique<Scene>();
+            unsigned curr_sim = m_gui->get_current_simulation();
+            m_scene = std::make_unique<Scene>(curr_sim);
             GUI* old_gui = m_gui.release();
             delete old_gui;
-            m_gui = std::make_unique<GUI>(m_window_manager->getWindow(), m_scene.get());
+            m_gui = std::make_unique<GUI>(m_window_manager->getWindow(), m_scene.get(), curr_sim);
             continue;
         }
 
@@ -60,8 +62,11 @@ void App::run() {
         // Simulation
         double dt = 1. / m_gui->UPDATES_PER_SECOND;
         if (down_time >= dt) {
-            m_scene->get_sb_cube()->simulate_mass_spring(dt);
-            down_time = 0.0f;
+            if (m_scene->get_current_sim() == 0) 
+                m_scene->get_sb_cube_ms()->simulate(dt);
+            else if (m_scene->get_current_sim() == 1)
+                m_scene->get_sb_cube_xpbd()->simulate(dt);
+            down_time -= dt;
             m_gui->run_once = false;
         }
 
@@ -69,8 +74,11 @@ void App::run() {
         m_camera->update();
 
         // Handle rendering
-        m_renderer->render(m_camera.get(), m_scene.get());
-        
+        if (m_scene->get_current_sim() == 0)
+            m_renderer->render_mass_spring(m_camera.get(), m_scene.get());
+        else if(m_scene->get_current_sim() == 1)
+            m_renderer->render_XPBD(m_camera.get(), m_scene.get());
+            
         // Render GUI
         m_gui->render_gui();
 

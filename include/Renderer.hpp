@@ -21,5 +21,6 @@ class Renderer {
     public:
         Renderer();
         ~Renderer();
-        void render(Camera* camera, const Scene* scene);
+        void render_mass_spring(Camera* camera, const Scene* scene);
+        void render_XPBD(Camera* camera, const Scene* scene);
 };

@@ -15,7 +15,7 @@ Camera::Camera() {
 
     m_position = glm::vec3(camX, camY, camZ);
     m_view = glm::lookAt(m_position, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    m_projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+    m_projection = glm::perspective(glm::radians(45.0f), 1200.0f / 800.0f, 0.1f, 100.0f);
 
     InputManager* input_manager = InputManager::get_instance();
     
@@ -34,7 +34,7 @@ Camera::Camera() {
     input_manager->add_on_press_behaviour(GLFW_KEY_W, [&](){
         m_theta += 0.075;
         float pi = glm::pi<float>();
-        m_theta = std::clamp(m_theta, -pi/3, pi/3);
+        m_theta = std::min(pi/3.0f, std::max(-pi/3.0f, m_theta));
     }, 
         Global::Input::APPEND
     );
@@ -42,7 +42,7 @@ Camera::Camera() {
     input_manager->add_on_press_behaviour(GLFW_KEY_S, [&](){
         m_theta -= 0.075;
         float pi = glm::pi<float>();
-        m_theta = std::clamp(m_theta, -pi/3, pi/3);
+        m_theta = std::min(pi/3.0f, std::max(-pi/3.0f, m_theta));
     }, 
         Global::Input::APPEND
     );

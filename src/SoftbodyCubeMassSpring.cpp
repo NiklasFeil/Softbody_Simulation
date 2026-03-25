@@ -1,8 +1,8 @@
-#include "SoftbodyCube.hpp"
+#include "SoftbodyCubeMassSpring.hpp"
 #include <cstring>
 #include <iostream>
 
-SoftbodyCube::SoftbodyCube(unsigned grid_dim, glm::vec3 center, glm::vec3 angles, double size)
+SoftbodyCubeMassSpring::SoftbodyCubeMassSpring(unsigned grid_dim, glm::vec3 center, glm::vec3 angles, double size)
 : m_grid_dim(grid_dim) {
     
     // SIMULATION
@@ -226,14 +226,14 @@ SoftbodyCube::SoftbodyCube(unsigned grid_dim, glm::vec3 center, glm::vec3 angles
     
 }
 
-SoftbodyCube::~SoftbodyCube() {
+SoftbodyCubeMassSpring::~SoftbodyCubeMassSpring() {
     m_vertices.clear();
     m_indices.clear();
     m_vertices.shrink_to_fit();
     m_indices.shrink_to_fit();
 }
 
-void SoftbodyCube::update_vbo() {
+void SoftbodyCubeMassSpring::update_vbo() {
     // Construct new m_vertices
     m_vertices.clear();
     for (unsigned i = 0; i < m_num_elements; i++) {
@@ -251,11 +251,11 @@ void SoftbodyCube::update_vbo() {
     //glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
-GLuint SoftbodyCube::get_vao() const {
+GLuint SoftbodyCubeMassSpring::get_vao() const {
     return m_vao;   
 };
 
-void SoftbodyCube::simulate_mass_spring(double dt) {
+void SoftbodyCubeMassSpring::simulate(double dt) {
     
     // Construct force vector
     Eigen::VectorXd f = Eigen::VectorXd::Zero(m_num_elements);
@@ -299,18 +299,18 @@ void SoftbodyCube::simulate_mass_spring(double dt) {
     // Semi-implicit Euler
     Eigen::VectorXd acc = m_inverse_mass * f + m_gravity;
     Eigen::VectorXd dv = dt * acc;
-    Eigen::VectorXd dx = dt * dv;
-
-    m_positions += dx;
     m_velocities += dv;
+    Eigen::VectorXd dx = dt * dv;
+    m_positions += dx;
+
 
     update_vbo();
 }
 
-size_t SoftbodyCube::get_index(size_t i, size_t j, size_t k) {
+size_t SoftbodyCubeMassSpring::get_index(size_t i, size_t j, size_t k) {
     return i + m_grid_dim * j + m_grid_dim * m_grid_dim * k;
 }
 
-unsigned SoftbodyCube::get_grid_dim() {
+unsigned SoftbodyCubeMassSpring::get_grid_dim() {
     return m_grid_dim;
 }

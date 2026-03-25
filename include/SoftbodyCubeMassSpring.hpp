@@ -7,7 +7,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
-class SoftbodyCube {
+class SoftbodyCubeMassSpring {
     private:
         
         // Positions of vertices used for calculations in simulation. Required because cube is soft and simply transforming cube using model matrix works only with rigid mesh.
@@ -42,19 +42,16 @@ class SoftbodyCube {
         double m_penalty_dampening_constant = 1.0;
 
         size_t get_index(size_t i, size_t j, size_t k);
-
-        // TODO: Variables required for XPBD
-
         
     public:
-        SoftbodyCube(unsigned grid_dim, glm::vec3 center, glm::vec3 angles, double size);
-        ~SoftbodyCube();
+        SoftbodyCubeMassSpring(unsigned grid_dim, glm::vec3 center, glm::vec3 angles, double size);
+        ~SoftbodyCubeMassSpring();
 
         GLuint get_vao() const;
 
         unsigned get_grid_dim();
         
-        void simulate_mass_spring(double dt);
+        void simulate(double dt);
                 
         void set_spring_constant(double val) {
             m_spring_constant = val;
