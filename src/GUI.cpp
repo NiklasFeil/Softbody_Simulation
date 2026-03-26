@@ -52,10 +52,22 @@ void GUI::start_frame() {
             if(ImGui::SliderFloat("penalty dampening constant", &m_penalty_dampening_constant, min_const, max_const)) {
                 m_scene->get_sb_cube_ms()->set_penalty_dampening_constant(m_penalty_dampening_constant);
             }
+            if(ImGui::SliderInt("grid dim", &m_grid_dim, 2, 4)) {
+                m_scene->get_sb_cube_ms()->set_grid_dim(m_grid_dim);
+            }
             break;        
         case 1:
             if(ImGui::SliderFloat("inverse stiffness", &m_inverse_stiffness, min_const_xpbd, max_const_xpbd)) {
-                m_scene->get_sb_cube_xpbd()->set_inverse_stiffness(m_inverse_stiffness);
+                m_scene->get_sb_obj_xpbd(m_current_object)->set_inverse_stiffness(m_inverse_stiffness);
+            }
+            if(ImGui::SliderInt("solver iterations", &m_solver_iterations, 1, 50)) {
+                m_scene->get_sb_obj_xpbd(m_current_object)->set_solver_iterations(m_solver_iterations);
+            }
+            if(ImGui::Checkbox("Distance Constraint", &m_distance_constraint_on)) {
+                m_scene->get_sb_obj_xpbd(m_current_object)->set_distance_constraint_on(m_distance_constraint_on);
+            }
+            if(ImGui::Checkbox("Volume Constraint", &m_volume_constraint_on)) {
+                m_scene->get_sb_obj_xpbd(m_current_object)->set_volume_constraint_on(m_volume_constraint_on);
             }
             break;
     }
@@ -70,18 +82,28 @@ void GUI::start_frame() {
         sim_running = false;
     }
     if(ImGui::Button("Reset")) {
-        reset = true;
         sim_running = false;
-        run_once = false;
+        m_scene->reset();
+    }
+    if(ImGui::Button("Cube")) {
+        sim_running = false;
+        m_current_object = "cube";
+        m_scene->set_current_object("cube");
+        m_scene->reset();
+    }
+    if(ImGui::Button("Sphere")) {
+        sim_running = false;
+        m_current_object = "sphere";
+        m_scene->set_current_object("sphere");
+        m_scene->reset();
     }
     if(ImGui::Button("Switch Simulation")) {
+        sim_running = false;
         m_current_simulation = (m_current_simulation + 1) % 2;
-        reset = true;
+        m_scene->set_current_sim(m_current_simulation);
+        m_scene->reset();
     }
-    
     ImGui::End();
-    
-    //ImGui::ShowDemoWindow(); // Show demo window! :)
 }
 
 void GUI::render_gui() {

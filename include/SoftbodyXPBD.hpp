@@ -6,20 +6,22 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include "ObjLoader.hpp"
 
-class SoftbodyCubeXPBD {
+class SoftbodyXPBD {
     private:
         
         // Positions of vertices used for calculations in simulation. Required because cube is soft and simply transforming cube using model matrix works only with rigid mesh.
         Eigen::VectorXd m_positions;
         Eigen::VectorXd m_velocities;
         Eigen::VectorXd m_lambda;
+        Obj* m_obj;
 
         // Center of cube when spawning. All other movement is stored in m_positions and is relative to m_center
         // => m_center does not change
         glm::vec3 m_center;
         glm::vec3 m_angles;
-        double m_size;
+        glm::vec3 m_scale;
 
         // Data required to construct using VAO
         std::vector<float> m_vertices;
@@ -50,8 +52,8 @@ class SoftbodyCubeXPBD {
         double calculate_volume();
         
     public:
-        SoftbodyCubeXPBD(glm::vec3 center, glm::vec3 angles, double size);
-        ~SoftbodyCubeXPBD();
+        SoftbodyXPBD(Obj* obj, glm::vec3 center, glm::vec3 angles, glm::vec3 scale);
+        ~SoftbodyXPBD();
 
         GLuint get_vao() const;
         
@@ -67,5 +69,5 @@ class SoftbodyCubeXPBD {
 
         void set_volume_constraint_on(bool val);
 
-        void reset_cube();
+        void reset_object();
     };

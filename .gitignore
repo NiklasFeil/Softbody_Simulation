@@ -5,7 +5,7 @@
 *.slo
 *.lo
 *.o
-*.obj
+bunny.obj
 
 # Precompiled Headers
 *.gch

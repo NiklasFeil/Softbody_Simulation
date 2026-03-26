@@ -1,23 +1,23 @@
-#include "SoftbodyCubeXPBD.hpp"
+#include "SoftbodyXPBD.hpp"
 #include <cstring>
 #include <iostream>
 #include <Eigen/Geometry>
 
-SoftbodyCubeXPBD::SoftbodyCubeXPBD(glm::vec3 center, glm::vec3 angles, double size)
-: m_center(center), m_angles(angles), m_size(size) {
+SoftbodyXPBD::SoftbodyXPBD(Obj* obj, glm::vec3 center, glm::vec3 angles, glm::vec3 scale)
+: m_obj(obj), m_center(center), m_angles(angles), m_scale(scale) {
     
-    reset_cube();
+    reset_object();
 
 }
 
-SoftbodyCubeXPBD::~SoftbodyCubeXPBD() {
+SoftbodyXPBD::~SoftbodyXPBD() {
     m_vertices.clear();
     m_indices.clear();
     m_vertices.shrink_to_fit();
     m_indices.shrink_to_fit();
 }
 
-void SoftbodyCubeXPBD::update_vbo() {
+void SoftbodyXPBD::update_vbo() {
     // Construct new m_vertices
     m_vertices.clear();
     for (unsigned i = 0; i < m_num_elements; i++) {
@@ -35,11 +35,11 @@ void SoftbodyCubeXPBD::update_vbo() {
     //glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
-GLuint SoftbodyCubeXPBD::get_vao() const {
+GLuint SoftbodyXPBD::get_vao() const {
     return m_vao;   
 };
 
-void SoftbodyCubeXPBD::simulate(double dt) {
+void SoftbodyXPBD::simulate(double dt) {
 
     double inverse_stiffness_tilde = m_inverse_stiffness / (dt * dt);
 
@@ -131,31 +131,31 @@ void SoftbodyCubeXPBD::simulate(double dt) {
     update_vbo();
 }
 
-size_t SoftbodyCubeXPBD::get_index(size_t i, size_t j, size_t k) {
+size_t SoftbodyXPBD::get_index(size_t i, size_t j, size_t k) {
     return i + m_grid_dim * j + m_grid_dim * m_grid_dim * k;
 }
 
-unsigned SoftbodyCubeXPBD::get_grid_dim() {
+unsigned SoftbodyXPBD::get_grid_dim() {
     return m_grid_dim;
 }
 
-void SoftbodyCubeXPBD::set_inverse_stiffness(float inv_stiff) {
+void SoftbodyXPBD::set_inverse_stiffness(float inv_stiff) {
     m_inverse_stiffness = inv_stiff;
 }
 
-void SoftbodyCubeXPBD::set_solver_iterations(unsigned iters) {
+void SoftbodyXPBD::set_solver_iterations(unsigned iters) {
     m_solver_iterations = iters;
 }
 
-void SoftbodyCubeXPBD::set_distance_constraint_on(bool val) {
+void SoftbodyXPBD::set_distance_constraint_on(bool val) {
     m_distance_constraint_on = val;
 }
 
-void SoftbodyCubeXPBD::set_volume_constraint_on(bool val) {
+void SoftbodyXPBD::set_volume_constraint_on(bool val) {
     m_volume_constraint_on = val;
 }
 
-double SoftbodyCubeXPBD::calculate_volume() {
+double SoftbodyXPBD::calculate_volume() {
     double volume = 0;
     unsigned first, second, third;
     double triangle_volume;
@@ -178,7 +178,8 @@ double SoftbodyCubeXPBD::calculate_volume() {
     return volume;
 }
 
-void SoftbodyCubeXPBD::reset_cube() {
+void SoftbodyXPBD::reset_object() {
+
     // SIMULATION
 
     Eigen::Vector3d e_center;
@@ -190,24 +191,15 @@ void SoftbodyCubeXPBD::reset_cube() {
 
     Eigen::Matrix3d e_rotation = (yaw_angle * pitch_angle * roll_angle).matrix();
 
-    m_num_elements = 3 * 8;
-    // Construct m_positions first
-    m_positions = Eigen::VectorXd::Zero(m_num_elements);
-    double step = m_size / (m_grid_dim-1);
-    for (int k = 0; k < m_grid_dim; ++k) {
-        for (int j = 0; j < m_grid_dim; ++j) {
-            for (int i = 0; i < m_grid_dim; ++i) {
-                double x = -m_size/2.0 + i * step;
-                double y = -m_size/2.0 + j * step;
-                double z = -m_size/2.0 + k * step;
+    m_positions = m_obj->positions;
+    Eigen::Vector3d scale(m_scale.x, m_scale.y, m_scale.z);
 
-                std::cout << "(" << x << ", " << y << ", " << z << ")" << std::endl;
-
-                m_positions.segment(3 * get_index(i, j, k), 3) = e_center + e_rotation * Eigen::Vector3d(x, y, z);
-            }
-        }
+    for (int i = 0; i < m_positions.size(); i += 3) {
+        m_positions.segment(i, 3).array() *= scale.array();
+        m_positions.segment(i, 3) = e_center + e_rotation * m_positions.segment(i, 3);
     }
-
+    
+    m_num_elements = m_positions.size();
 
     m_velocities = Eigen::VectorXd::Zero(m_num_elements);
 
@@ -221,82 +213,12 @@ void SoftbodyCubeXPBD::reset_cube() {
         m_gravity(i) = -9.81;
     }
 
-    // Construct edges. 
-    Eigen::Vector3d difference;
-    double length;
-    int first, second;
-    for (int k = 0; k < m_grid_dim; ++k) {
-        for (int j = 0; j < m_grid_dim; ++j) {
-            for (int i = 0; i < m_grid_dim; ++i) {
-                // Parallel Edges
-                if (i + 1 < m_grid_dim) {
-                    first = get_index(i, j, k);
-                    second = get_index(i+1, j, k);
-                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
-                    if (first < second)
-                        m_edges.push_back({first, second, length});
-                }
-                if (j + 1 < m_grid_dim) {
-                    first = get_index(i, j, k);
-                    second = get_index(i, j+1, k);
-                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
-                    if (first < second)
-                        m_edges.push_back({first, second, length});
-                }
-                if (k + 1 < m_grid_dim) {
-                    first = get_index(i, j, k);
-                    second = get_index(i, j, k+1);
-                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
-                    if (first < second)
-                        m_edges.push_back({first, second, length});
-                }
+    m_edges = m_obj->edges;
 
-                // Diagonals
-                if (i + 1 < m_grid_dim && j + 1 < m_grid_dim) {
-                    first = get_index(i, j, k);
-                    second = get_index(i+1, j+1, k);
-                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
-                    if (first < second)
-                        m_edges.push_back({first, second, length});
-                }
-                if (j + 1 < m_grid_dim && k + 1 < m_grid_dim) {
-                    first = get_index(i, j, k);
-                    second = get_index(i, j+1, k+1);
-                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
-                    if (first < second)
-                        m_edges.push_back({first, second, length});
-                }
-                if (i + 1 < m_grid_dim && k + 1 < m_grid_dim) {
-                    first = get_index(i, j, k);
-                    second = get_index(i+1, j, k+1);
-                    length = (m_positions.segment(3 * second, 3) - m_positions.segment(3 * first, 3)).norm();
-                    if (first < second)
-                        m_edges.push_back({first, second, length});
-                }
-            }
-        }
-    }
+    m_triangles = m_obj->triangles;
 
-    // triangle winding order must be consistent for volume to be calculated correctly
-    m_triangles = {
-        {0, 3, 1},
-        {0, 2, 3},
-
-        {7, 3, 2},
-        {6, 7, 2},
-
-        {5, 1, 7},
-        {1, 3, 7},
-
-        {4, 5, 7},
-        {4, 7, 6},
-
-        {0, 6, 2},
-        {0, 4, 6},
-
-        {0, 1, 5},
-        {0, 5, 4}
-    };
+    std::cout << "Number of points: " << m_positions.size() / 3 << std::endl;
+    std::cout << "Number of edges: " << m_edges.size() << std::endl;
 
     m_num_constraints = m_edges.size() + 1; // num_edges distance constraints + 1 volume constraint
     m_lambda = Eigen::VectorXd::Zero(m_num_constraints);

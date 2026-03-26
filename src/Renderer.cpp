@@ -28,7 +28,7 @@ void Renderer::render_object(const Object& shape) {
 
 void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
         
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(130.0f/255.0f, 200.0f/255.0f, 229.0f/255.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
@@ -45,7 +45,7 @@ void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
     int projectionLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "projection");
     int colorLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "color");
     glm::vec3 orange = glm::vec3(1.0f, 0.5f, 0.2f);
-    glm::vec3 green = glm::vec3(0.2f, 0.8f, 0.2f);
+    glm::vec3 green = glm::vec3(0.2f, 0.6f, 0.2f);
 
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(platform->get_model()));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera->get_view()));
@@ -63,6 +63,7 @@ void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glPointSize(10.0f);
     glDrawArrays(GL_POINTS, 0, grid_dim * grid_dim * grid_dim);
+    glDrawElements(GL_LINES, 1128, GL_UNSIGNED_INT, 0);
     //glDrawElements(GL_POINTS, 36, GL_UNSIGNED_INT, 0);
     //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
@@ -70,16 +71,12 @@ void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
 
 void Renderer::render_XPBD(Camera* camera, const Scene* scene) {
         
-    
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(130.0f/255.0f, 200.0f/255.0f, 229.0f/255.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
     Solid* platform = scene->get_solid(0);
     GLuint platform_vao = platform->get_vao();
-    
-    SoftbodyCubeXPBD* sb_cube = scene->get_sb_cube_xpbd();
-    GLuint sb_cube_vao = sb_cube->get_vao();
 
     glUseProgram(m_basic_shader_program->get_id());
     int modelLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "model");
@@ -87,7 +84,7 @@ void Renderer::render_XPBD(Camera* camera, const Scene* scene) {
     int projectionLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "projection");
     int colorLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "color");
     glm::vec3 orange = glm::vec3(1.0f, 0.5f, 0.2f);
-    glm::vec3 green = glm::vec3(0.2f, 0.8f, 0.2f);
+    glm::vec3 green = glm::vec3(0.2f, 0.6f, 0.2f);
 
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(platform->get_model()));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera->get_view()));
@@ -101,11 +98,26 @@ void Renderer::render_XPBD(Camera* camera, const Scene* scene) {
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f))); // "Model matrix" already applied to particle positions
     glUniform3fv(colorLoc, 1, glm::value_ptr(green));
     
-    glBindVertexArray(sb_cube_vao);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glPointSize(10.0f);
-    glDrawArrays(GL_POINTS, 0, 8);
-    
+    if (scene->get_current_object() == "cube") {
+        SoftbodyXPBD* sb_cube = scene->get_sb_obj_xpbd("cube");
+        GLuint sb_cube_vao = sb_cube->get_vao();
+
+        glBindVertexArray(sb_cube_vao);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPointSize(10.0f);
+        glDrawArrays(GL_POINTS, 0, 2503);
+        glDrawElements(GL_LINES, 7473, GL_UNSIGNED_INT, 0);
+    }
+    else if (scene->get_current_object() == "sphere") {
+        SoftbodyXPBD* sb_obj = scene->get_sb_obj_xpbd("sphere");
+        GLuint sb_obj_vao = sb_obj->get_vao();
+
+        glBindVertexArray(sb_obj_vao);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPointSize(10.0f);
+        glDrawArrays(GL_POINTS, 0, 2503);
+        glDrawElements(GL_LINES, 7473, GL_UNSIGNED_INT, 0);
+    }
     //glDrawElements(GL_POINTS, 36, GL_UNSIGNED_INT, 0);
     //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 

@@ -11,7 +11,7 @@ App::App() {
     m_window_manager->syncViewportToWindow();
     m_input_manager = InputManager::construct_instance(m_window_manager.get());
     m_renderer = std::make_unique<Renderer>();
-    m_scene = std::make_unique<Scene>(curr_sim);
+    m_scene = std::make_unique<Scene>(curr_sim, "cube");
     m_camera = std::make_unique<Camera>();
     m_gui = std::make_unique<GUI>(m_window_manager->getWindow(), m_scene.get(), curr_sim);
 }
@@ -45,15 +45,6 @@ void App::run() {
             down_time += curr_time - prev_time;
         }
 
-        if(m_gui->reset) {
-            unsigned curr_sim = m_gui->get_current_simulation();
-            m_scene = std::make_unique<Scene>(curr_sim);
-            GUI* old_gui = m_gui.release();
-            delete old_gui;
-            m_gui = std::make_unique<GUI>(m_window_manager->getWindow(), m_scene.get(), curr_sim);
-            continue;
-        }
-
         prev_time = curr_time;
 
         // Process input
@@ -62,10 +53,18 @@ void App::run() {
         // Simulation
         double dt = 1. / m_gui->UPDATES_PER_SECOND;
         if (down_time >= dt) {
-            if (m_scene->get_current_sim() == 0) 
+            if (m_scene->get_current_sim() == 0) {
                 m_scene->get_sb_cube_ms()->simulate(dt);
-            else if (m_scene->get_current_sim() == 1)
-                m_scene->get_sb_cube_xpbd()->simulate(dt);
+            }
+            else if (m_scene->get_current_sim() == 1) {
+                m_scene->get_sb_obj_xpbd(m_scene->get_current_object())->simulate(dt);
+/*                if (m_scene->get_current_object() == "cube") {
+                    m_scene->get_sb_obj_xpbd("cube")->simulate(dt);
+                }
+                else if (m_scene->get_current_object() == "sphere") {
+                    m_scene->get_sb_obj_xpbd("sphere")->simulate(dt);
+                }*/
+            }
             down_time -= dt;
             m_gui->run_once = false;
         }

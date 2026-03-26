@@ -18,6 +18,7 @@ class SoftbodyCubeMassSpring {
         // => m_center does not change
         glm::vec3 m_center;
         double m_size;
+        glm::vec3 m_angles;
 
         // Data required to construct using VAO
         std::vector<float> m_vertices;
@@ -65,4 +66,9 @@ class SoftbodyCubeMassSpring {
         void set_penalty_dampening_constant(double val) {
             m_penalty_dampening_constant = val;
         }
+        void set_grid_dim(int val) {
+            m_grid_dim = val;
+            reset_cube();
+        }
+        void reset_cube();
     };
