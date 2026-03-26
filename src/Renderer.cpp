@@ -35,10 +35,6 @@ void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
     Solid* platform = scene->get_solid(0);
     GLuint platform_vao = platform->get_vao();
 
-    SoftbodyCubeMassSpring* sb_cube = scene->get_sb_cube_ms();
-    GLuint sb_cube_vao = sb_cube->get_vao();
-    unsigned grid_dim = sb_cube->get_grid_dim();
-
     glUseProgram(m_basic_shader_program->get_id());
     int modelLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "model");
     int viewLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "view");
@@ -59,11 +55,37 @@ void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f))); // "Model matrix" already applied to particle positions
     glUniform3fv(colorLoc, 1, glm::value_ptr(green));
 
-    glBindVertexArray(sb_cube_vao);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glPointSize(10.0f);
-    glDrawArrays(GL_POINTS, 0, grid_dim * grid_dim * grid_dim);
-    glDrawElements(GL_LINES, 1128, GL_UNSIGNED_INT, 0);
+    if(scene->get_current_object() == "cube") {
+        SoftbodyMassSpring* sb_cube = scene->get_sb_obj_ms("cube");
+        GLuint sb_cube_vao = sb_cube->get_vao();
+
+        glBindVertexArray(sb_cube_vao);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPointSize(10.0f);
+        glDrawArrays(GL_POINTS, 0, sb_cube->get_number_of_vertices());
+        glDrawElements(GL_LINES, sb_cube->get_number_of_indices(), GL_UNSIGNED_INT, 0);
+    }
+    else if(scene->get_current_object() == "sphere") {
+        SoftbodyMassSpring* sb_sphere = scene->get_sb_obj_ms("sphere");
+        GLuint sb_sphere_vao = sb_sphere->get_vao();
+
+        glBindVertexArray(sb_sphere_vao);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPointSize(10.0f);
+        glDrawArrays(GL_POINTS, 0, sb_sphere->get_number_of_vertices());
+        glDrawElements(GL_LINES, sb_sphere->get_number_of_indices(), GL_UNSIGNED_INT, 0);
+    }
+    else if(scene->get_current_object() == "adaptable_cube") {
+        SoftbodyCubeMassSpring* sb_cube = scene->get_sb_cube_ms();
+        GLuint sb_cube_vao = sb_cube->get_vao();
+        unsigned grid_dim = sb_cube->get_grid_dim();
+
+        glBindVertexArray(sb_cube_vao);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPointSize(10.0f);
+        glDrawArrays(GL_POINTS, 0, grid_dim * grid_dim * grid_dim);
+        glDrawElements(GL_LINES, 1128, GL_UNSIGNED_INT, 0);
+    }
     //glDrawElements(GL_POINTS, 36, GL_UNSIGNED_INT, 0);
     //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
@@ -105,8 +127,10 @@ void Renderer::render_XPBD(Camera* camera, const Scene* scene) {
         glBindVertexArray(sb_cube_vao);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glPointSize(10.0f);
-        glDrawArrays(GL_POINTS, 0, 2503);
-        glDrawElements(GL_LINES, 7473, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_POINTS, 0, sb_cube->get_number_of_vertices());
+        glDrawElements(GL_LINES, sb_cube->get_number_of_indices(), GL_UNSIGNED_INT, 0);
+        //glDrawArrays(GL_POINTS, 0, 10000);
+        //glDrawElements(GL_LINES, 10000, GL_UNSIGNED_INT, 0);
     }
     else if (scene->get_current_object() == "sphere") {
         SoftbodyXPBD* sb_obj = scene->get_sb_obj_xpbd("sphere");
@@ -115,10 +139,9 @@ void Renderer::render_XPBD(Camera* camera, const Scene* scene) {
         glBindVertexArray(sb_obj_vao);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glPointSize(10.0f);
-        glDrawArrays(GL_POINTS, 0, 2503);
-        glDrawElements(GL_LINES, 7473, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_POINTS, 0, sb_obj->get_number_of_vertices());
+        glDrawElements(GL_LINES, sb_obj->get_number_of_indices(), GL_UNSIGNED_INT, 0);
+        //glDrawArrays(GL_POINTS, 0, 10000);
+        //glDrawElements(GL_LINES, 10000, GL_UNSIGNED_INT, 0);
     }
-    //glDrawElements(GL_POINTS, 36, GL_UNSIGNED_INT, 0);
-    //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
 }

@@ -55,7 +55,6 @@ void SoftbodyXPBD::simulate(double dt) {
     for(int k = 0; k < m_solver_iterations; k++) {
         // Soft constraints
         if(m_distance_constraint_on) {
-            //std::cout << "Fulfilling distance constraint" << std::endl;
             // Distance constraints (simple linear spring constraint |xi - xj| - l_ij)
             for(int j = 0; j < m_edges.size(); j++) {
                 // Each edge represents one constraint C_j between two particles
@@ -80,7 +79,6 @@ void SoftbodyXPBD::simulate(double dt) {
         }
         // Volume constraint
         if(m_volume_constraint_on) {
-            //std::cout << "Fulfilling volume constraint" << std::endl;
             double current_volume = calculate_volume();
             double Cj = current_volume - m_goal_volume;
             if (Cj != 0.0) {
@@ -198,7 +196,7 @@ void SoftbodyXPBD::reset_object() {
         m_positions.segment(i, 3).array() *= scale.array();
         m_positions.segment(i, 3) = e_center + e_rotation * m_positions.segment(i, 3);
     }
-    
+
     m_num_elements = m_positions.size();
 
     m_velocities = Eigen::VectorXd::Zero(m_num_elements);
@@ -217,14 +215,10 @@ void SoftbodyXPBD::reset_object() {
 
     m_triangles = m_obj->triangles;
 
-    std::cout << "Number of points: " << m_positions.size() / 3 << std::endl;
-    std::cout << "Number of edges: " << m_edges.size() << std::endl;
-
     m_num_constraints = m_edges.size() + 1; // num_edges distance constraints + 1 volume constraint
     m_lambda = Eigen::VectorXd::Zero(m_num_constraints);
 
     m_goal_volume = calculate_volume();
-    std::cout << "Volume: " << m_goal_volume << std::endl;
 
     // RENDERING
 
@@ -262,4 +256,12 @@ void SoftbodyXPBD::reset_object() {
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0); // Unbind VAO again    
+}
+
+size_t SoftbodyXPBD::get_number_of_vertices() {
+    return m_vertices.size() / 3;
+}
+
+size_t SoftbodyXPBD::get_number_of_indices() {
+    return m_indices.size();
 }

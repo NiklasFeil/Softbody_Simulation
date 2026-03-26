@@ -42,9 +42,14 @@ Scene::Scene(unsigned sim, const char* obj)
 
     m_solids.push_back(std::make_unique<Solid>(vertices, indices, glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.5f, 5.0f))); 
 
-    m_sb_cube_ms = std::make_unique<SoftbodyCubeMassSpring>(3, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), 2);
-    m_sb_cube_xpbd = std::make_unique<SoftbodyXPBD>(ObjLoader::load("../models/cube.obj"), glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
-    m_sb_sphere_xpbd = std::make_unique<SoftbodyXPBD>(ObjLoader::load("../models/sphere.obj"), glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
+    Obj* cube_obj = ObjLoader::load("../models/cube.obj");
+    Obj* sphere_obj = ObjLoader::load("../models/sphere.obj");
+
+    m_sb_cube_ms = std::make_unique<SoftbodyMassSpring>(cube_obj, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
+    m_sb_sphere_ms = std::make_unique<SoftbodyMassSpring>(sphere_obj, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
+    m_sb_adaptable_cube_ms = std::make_unique<SoftbodyCubeMassSpring>(3, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), 2);
+    m_sb_cube_xpbd = std::make_unique<SoftbodyXPBD>(cube_obj, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
+    m_sb_sphere_xpbd = std::make_unique<SoftbodyXPBD>(sphere_obj, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
 }
 
 Scene::~Scene() {
@@ -56,7 +61,16 @@ Solid* Scene::get_solid(size_t idx) const {
 }
 
 SoftbodyCubeMassSpring* Scene::get_sb_cube_ms() const {
-    return m_sb_cube_ms.get();
+    return m_sb_adaptable_cube_ms.get();
+}
+
+SoftbodyMassSpring* Scene::get_sb_obj_ms(std::string obj) const {
+    if (obj == "sphere")
+        return m_sb_sphere_ms.get();
+    else if (obj == "cube")
+        return m_sb_cube_ms.get();
+    else
+        throw std::invalid_argument("Given object does not exist");
 }
 
 SoftbodyXPBD* Scene::get_sb_obj_xpbd(std::string obj) const {

@@ -54,16 +54,13 @@ void App::run() {
         double dt = 1. / m_gui->UPDATES_PER_SECOND;
         if (down_time >= dt) {
             if (m_scene->get_current_sim() == 0) {
-                m_scene->get_sb_cube_ms()->simulate(dt);
+                if(m_scene->get_current_object() == "adaptable_cube")
+                    m_scene->get_sb_cube_ms()->simulate(dt);
+                else
+                    m_scene->get_sb_obj_ms(m_scene->get_current_object())->simulate(dt);
             }
             else if (m_scene->get_current_sim() == 1) {
                 m_scene->get_sb_obj_xpbd(m_scene->get_current_object())->simulate(dt);
-/*                if (m_scene->get_current_object() == "cube") {
-                    m_scene->get_sb_obj_xpbd("cube")->simulate(dt);
-                }
-                else if (m_scene->get_current_object() == "sphere") {
-                    m_scene->get_sb_obj_xpbd("sphere")->simulate(dt);
-                }*/
             }
             down_time -= dt;
             m_gui->run_once = false;

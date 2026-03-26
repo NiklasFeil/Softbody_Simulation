@@ -97,9 +97,18 @@ void GUI::start_frame() {
         m_scene->set_current_object("sphere");
         m_scene->reset();
     }
+    if(m_current_simulation == 0) {
+        if(ImGui::Button("Adaptable Cube")) {
+            sim_running = false;
+            m_current_object = "adaptable_cube";
+            m_scene->set_current_object("adaptable_cube");
+            m_scene->reset();
+        }
+    }
     if(ImGui::Button("Switch Simulation")) {
         sim_running = false;
         m_current_simulation = (m_current_simulation + 1) % 2;
+        m_scene->set_current_object("cube");
         m_scene->set_current_sim(m_current_simulation);
         m_scene->reset();
     }
