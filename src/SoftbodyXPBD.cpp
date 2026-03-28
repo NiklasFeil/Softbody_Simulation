@@ -79,8 +79,12 @@ void SoftbodyXPBD::simulate(double dt) {
 
                 Eigen::Vector3d position_second = m_positions.segment(second * 3, 3);
 
-                double Cj = (position_first - position_second).norm() - length;
-                Eigen::Vector3d dCj = (position_first - position_second) / (position_first - position_second).norm();
+                double diff_norm = (position_first - position_second).norm();
+
+                if (diff_norm < 1e-7) continue; // Prevent some weird behaviours because of division
+
+                double Cj = diff_norm - length;
+                Eigen::Vector3d dCj = (position_first - position_second) / diff_norm;
 
                 double delta_lambda_j = (- Cj - inverse_stiffness_tilde * m_lambda[j]) / (2 * (1 / m_particle_mass) + inverse_stiffness_tilde); 
                 m_positions.segment(first * 3, 3) += (1 / m_particle_mass) * dCj * delta_lambda_j;
@@ -132,9 +136,6 @@ void SoftbodyXPBD::simulate(double dt) {
             // The velocity is set below.
             if (m_positions[i] < 0.0) {
                 m_positions[i] = 0.0;
-                if (m_velocities[i] < 0.0) {
-                    m_velocities[i] = 0.0;
-                }
             }
         }
     }
