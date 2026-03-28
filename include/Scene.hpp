@@ -12,9 +12,11 @@ class Scene {
         std::vector<std::unique_ptr<Solid>> m_solids;
         std::unique_ptr<SoftbodyMassSpring> m_sb_cube_ms;
         std::unique_ptr<SoftbodyMassSpring> m_sb_sphere_ms;
+        std::unique_ptr<SoftbodyMassSpring> m_sb_detailed_sphere_ms;
         std::unique_ptr<SoftbodyCubeMassSpring> m_sb_adaptable_cube_ms;
         std::unique_ptr<SoftbodyXPBD> m_sb_cube_xpbd;
         std::unique_ptr<SoftbodyXPBD> m_sb_sphere_xpbd;
+        std::unique_ptr<SoftbodyXPBD> m_sb_detailed_sphere_xpbd;
 
         unsigned m_current_simulation;
         std::string m_current_object;

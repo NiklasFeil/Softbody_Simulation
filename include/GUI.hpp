@@ -8,26 +8,33 @@ class GUI {
     private:
 
         const int min_ups = 5;
-        const int max_ups = 60;
+        const int max_ups = 120;
 
         // Mass Spring System
-        const float min_const = 0.1f;
-        const float max_const = 10.0f;
+        const float min_const = 1000.0f;
+        const float max_const = 100000.0f;
+        const float min_penalty = 1000.0f;
+        const float max_penalty = 100000.0f;
 
-        float m_spring_constant = 1.0f;
-        float m_dampening_constant = 1.0f;
-        float m_penalty_constant = 1.0f;
-        float m_penalty_dampening_constant = 1.0f;
+        float m_spring_constant_linear = 10000.0f;
+        float m_spring_constant_cubic = 10000.0f;
+        float m_dampening_constant = 10000.0f;
+        float m_penalty_constant = 10000.0f;
+        float m_penalty_dampening_constant = 10000.0f;
         int m_grid_dim = 3;
 
         // XPBD
         const float min_const_xpbd = 0.0f;
-        const float max_const_xpbd = 0.05f;
+        const float max_const_xpbd = 0.01f;
         float m_inverse_stiffness = 0.001f;
-        int m_solver_iterations = 15;
+        int m_solver_iterations = 5;
+        float m_goal_volume_multiplier = 1.0;
         bool m_distance_constraint_on = true;
         bool m_volume_constraint_on = true;
 
+        float min_mass = 0.1, max_mass = 10;
+        float m_particle_mass = 1.0;
+        float m_gravity_multiplier = 1.0;
         unsigned m_current_simulation; // 0 -> Mass Spring, 1 -> XPBD
         std::string m_current_object = "cube";
         Scene* m_scene;

@@ -30,17 +30,21 @@ class SoftbodyCubeMassSpring {
         void update_vbo();
 
         Eigen::VectorXd m_gravity;
+        double m_gravity_multiplier = 1.0;
+        double m_particle_mass = 1.0;
 
         // Variables required for Mass-Spring System
         unsigned m_grid_dim;
         int m_num_elements;
         // Springs (i, j) from i to j, denoting indices in m_positions
         std::vector<std::tuple<unsigned, unsigned, double>> m_springs; // (particle_i, particle_j, length)
-        Eigen::SparseMatrix<double> m_inverse_mass;
-        double m_spring_constant = 1.0;
+        double m_spring_constant_linear = 1.0;
+        double m_spring_constant_cubic = 1.0;
         double m_dampening_constant = 1.0;
         double m_penalty_constant = 1.0;
         double m_penalty_dampening_constant = 1.0;
+
+        Eigen::VectorXd m_force;
 
         size_t get_index(size_t i, size_t j, size_t k);
         
@@ -54,8 +58,11 @@ class SoftbodyCubeMassSpring {
         
         void simulate(double dt);
                 
-        void set_spring_constant(double val) {
-            m_spring_constant = val;
+        void set_spring_constant_linear(double val) {
+            m_spring_constant_linear = val;
+        }      
+        void set_spring_constant_cubic(double val) {
+            m_spring_constant_cubic = val;
         }
         void set_dampening_constant(double val) {
             m_dampening_constant = val;
@@ -66,6 +73,12 @@ class SoftbodyCubeMassSpring {
         void set_penalty_dampening_constant(double val) {
             m_penalty_dampening_constant = val;
         }
+        void set_particle_mass(double val) {
+            m_particle_mass = val;
+        }
+        void set_gravity_multiplier(double val) {
+            m_gravity_multiplier = val;
+        }   
         void set_grid_dim(int val) {
             m_grid_dim = val;
             reset_cube();

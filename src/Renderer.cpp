@@ -56,6 +56,7 @@ void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
     glUniform3fv(colorLoc, 1, glm::value_ptr(green));
 
     if(scene->get_current_object() == "cube") {
+        //std::cout << "MS CUBE RENDERED" << std::endl;
         SoftbodyMassSpring* sb_cube = scene->get_sb_obj_ms("cube");
         GLuint sb_cube_vao = sb_cube->get_vao();
 
@@ -66,6 +67,7 @@ void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
         glDrawElements(GL_LINES, sb_cube->get_number_of_indices(), GL_UNSIGNED_INT, 0);
     }
     else if(scene->get_current_object() == "sphere") {
+        //std::cout << "MS SPHERE RENDERED" << std::endl;
         SoftbodyMassSpring* sb_sphere = scene->get_sb_obj_ms("sphere");
         GLuint sb_sphere_vao = sb_sphere->get_vao();
 
@@ -75,7 +77,19 @@ void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
         glDrawArrays(GL_POINTS, 0, sb_sphere->get_number_of_vertices());
         glDrawElements(GL_LINES, sb_sphere->get_number_of_indices(), GL_UNSIGNED_INT, 0);
     }
+    else if(scene->get_current_object() == "detailed_sphere") {
+        //std::cout << "MS DETAILED_SPHERE RENDERED" << std::endl;
+        SoftbodyMassSpring* sb_sphere = scene->get_sb_obj_ms("detailed_sphere");
+        GLuint sb_sphere_vao = sb_sphere->get_vao();
+
+        glBindVertexArray(sb_sphere_vao);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPointSize(10.0f);
+        glDrawArrays(GL_POINTS, 0, sb_sphere->get_number_of_vertices());
+        glDrawElements(GL_LINES, sb_sphere->get_number_of_indices(), GL_UNSIGNED_INT, 0);
+    }
     else if(scene->get_current_object() == "adaptable_cube") {
+        //std::cout << "MS ADAPTABLE_CUBE RENDERED" << std::endl;
         SoftbodyCubeMassSpring* sb_cube = scene->get_sb_cube_ms();
         GLuint sb_cube_vao = sb_cube->get_vao();
         unsigned grid_dim = sb_cube->get_grid_dim();
@@ -121,6 +135,7 @@ void Renderer::render_XPBD(Camera* camera, const Scene* scene) {
     glUniform3fv(colorLoc, 1, glm::value_ptr(green));
     
     if (scene->get_current_object() == "cube") {
+        //std::cout << "XPBD CUBE RENDERED" << std::endl;
         SoftbodyXPBD* sb_cube = scene->get_sb_obj_xpbd("cube");
         GLuint sb_cube_vao = sb_cube->get_vao();
 
@@ -129,10 +144,9 @@ void Renderer::render_XPBD(Camera* camera, const Scene* scene) {
         glPointSize(10.0f);
         glDrawArrays(GL_POINTS, 0, sb_cube->get_number_of_vertices());
         glDrawElements(GL_LINES, sb_cube->get_number_of_indices(), GL_UNSIGNED_INT, 0);
-        //glDrawArrays(GL_POINTS, 0, 10000);
-        //glDrawElements(GL_LINES, 10000, GL_UNSIGNED_INT, 0);
     }
     else if (scene->get_current_object() == "sphere") {
+        //std::cout << "XPBD SPHERE RENDERED" << std::endl;
         SoftbodyXPBD* sb_obj = scene->get_sb_obj_xpbd("sphere");
         GLuint sb_obj_vao = sb_obj->get_vao();
 
@@ -141,7 +155,16 @@ void Renderer::render_XPBD(Camera* camera, const Scene* scene) {
         glPointSize(10.0f);
         glDrawArrays(GL_POINTS, 0, sb_obj->get_number_of_vertices());
         glDrawElements(GL_LINES, sb_obj->get_number_of_indices(), GL_UNSIGNED_INT, 0);
-        //glDrawArrays(GL_POINTS, 0, 10000);
-        //glDrawElements(GL_LINES, 10000, GL_UNSIGNED_INT, 0);
+    }
+    else if (scene->get_current_object() == "detailed_sphere") {
+        //std::cout << "XPBD DETAILED_SPHERE RENDERED" << std::endl;
+        SoftbodyXPBD* sb_obj = scene->get_sb_obj_xpbd("detailed_sphere");
+        GLuint sb_obj_vao = sb_obj->get_vao();
+
+        glBindVertexArray(sb_obj_vao);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPointSize(10.0f);
+        glDrawArrays(GL_POINTS, 0, sb_obj->get_number_of_vertices());
+        glDrawElements(GL_LINES, sb_obj->get_number_of_indices(), GL_UNSIGNED_INT, 0);
     }
 }

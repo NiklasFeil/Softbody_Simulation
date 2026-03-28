@@ -32,7 +32,7 @@ void App::run() {
 
     double prev_time = glfwGetTime();
     double curr_time;
-    double down_time = 0.0f;;
+    double down_time = 0.0;
 
     std::cout << "Starting while loop" << std::endl;
     while(!glfwWindowShouldClose(window)) {
@@ -43,6 +43,10 @@ void App::run() {
 
         if (m_gui->sim_running || m_gui->run_once) {
             down_time += curr_time - prev_time;
+        }
+        else {
+            // Needed so it actually stops simulation. Otherwise, lags might lead to it still playing when hitting pause or reset
+            down_time = 0.0; 
         }
 
         prev_time = curr_time;

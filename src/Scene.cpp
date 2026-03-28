@@ -44,12 +44,15 @@ Scene::Scene(unsigned sim, const char* obj)
 
     Obj* cube_obj = ObjLoader::load("../models/cube.obj");
     Obj* sphere_obj = ObjLoader::load("../models/sphere.obj");
+    Obj* detailed_sphere_obj = ObjLoader::load("../models/detailed_sphere.obj");
 
     m_sb_cube_ms = std::make_unique<SoftbodyMassSpring>(cube_obj, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
     m_sb_sphere_ms = std::make_unique<SoftbodyMassSpring>(sphere_obj, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
+    m_sb_detailed_sphere_ms = std::make_unique<SoftbodyMassSpring>(detailed_sphere_obj, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
     m_sb_adaptable_cube_ms = std::make_unique<SoftbodyCubeMassSpring>(3, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), 2);
     m_sb_cube_xpbd = std::make_unique<SoftbodyXPBD>(cube_obj, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
     m_sb_sphere_xpbd = std::make_unique<SoftbodyXPBD>(sphere_obj, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
+    m_sb_detailed_sphere_xpbd = std::make_unique<SoftbodyXPBD>(detailed_sphere_obj, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 45.0f), glm::vec3(1.0, 1.0, 1.0));
 }
 
 Scene::~Scene() {
@@ -69,6 +72,8 @@ SoftbodyMassSpring* Scene::get_sb_obj_ms(std::string obj) const {
         return m_sb_sphere_ms.get();
     else if (obj == "cube")
         return m_sb_cube_ms.get();
+    else if (obj == "detailed_sphere")
+        return m_sb_detailed_sphere_ms.get();
     else
         throw std::invalid_argument("Given object does not exist");
 }
@@ -78,6 +83,8 @@ SoftbodyXPBD* Scene::get_sb_obj_xpbd(std::string obj) const {
         return m_sb_sphere_xpbd.get();
     else if (obj == "cube")
         return m_sb_cube_xpbd.get();
+    else if (obj == "detailed_sphere")
+        return m_sb_detailed_sphere_xpbd.get();
     else
         throw std::invalid_argument("Given object does not exist");
 }
@@ -99,7 +106,11 @@ void Scene::set_current_sim(unsigned sim) {
 }
 
 void Scene::reset() {
-    m_sb_cube_ms->reset_cube();
+    m_sb_cube_ms->reset_object();
+    m_sb_sphere_ms->reset_object();
+    m_sb_detailed_sphere_ms->reset_object();
+    m_sb_adaptable_cube_ms->reset_cube();
     m_sb_cube_xpbd->reset_object();
     m_sb_sphere_xpbd->reset_object();
+    m_sb_detailed_sphere_xpbd->reset_object();
 }

@@ -1,6 +1,8 @@
 #include "SoftbodyCubeMassSpring.hpp"
 #include <cstring>
 #include <iostream>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 
 SoftbodyCubeMassSpring::SoftbodyCubeMassSpring(unsigned grid_dim, glm::vec3 center, glm::vec3 angles, double size)
 : m_grid_dim(grid_dim), m_center(center), m_angles(angles), m_size(size) {
@@ -40,8 +42,10 @@ GLuint SoftbodyCubeMassSpring::get_vao() const {
 
 void SoftbodyCubeMassSpring::simulate(double dt) {
     
+    double prev_time = glfwGetTime();
+
     // Construct force vector
-    Eigen::VectorXd f = Eigen::VectorXd::Zero(m_num_elements);
+    m_force.setZero();
 
     // Forces by springs
     for (auto& spring: m_springs) {
@@ -54,7 +58,7 @@ void SoftbodyCubeMassSpring::simulate(double dt) {
 
         Eigen::Vector3d position_j = m_positions.segment(j * 3, 3);
         Eigen::Vector3d velocity_j = m_velocities.segment(j * 3, 3);
-
+        
         // From i to j
         Eigen::Vector3d position_difference = position_j - position_i; 
         double position_difference_norm = position_difference.norm();
@@ -62,12 +66,15 @@ void SoftbodyCubeMassSpring::simulate(double dt) {
 
         Eigen::Vector3d direction_ij = position_difference / position_difference_norm;
 
-        double spring_force = m_spring_constant * (position_difference_norm - length);
+        double extension = (position_difference_norm - length);
+
+        double spring_force = m_spring_constant_linear * extension + m_spring_constant_cubic * extension * extension * extension;
         double dampening_force = m_dampening_constant * velocity_difference.dot(direction_ij);
 
         Eigen::Vector3d force_ij = (spring_force + dampening_force) * direction_ij;
-        f.segment(i * 3, 3) += force_ij;
-        f.segment(j * 3, 3) += -force_ij;
+
+        m_force.segment(i * 3, 3) +=  force_ij;
+        m_force.segment(j * 3, 3) += -force_ij;
     }
 
     // Penality force for particles in the floor ( y < 0 )
@@ -75,19 +82,32 @@ void SoftbodyCubeMassSpring::simulate(double dt) {
         double y = m_positions(i);
         double vy = m_velocities(i);
         if (y < 0.0) {
-            f(i) += - m_penalty_constant * y - m_penalty_dampening_constant * vy;
+
+            // Apply force upwards
+            m_force(i) += - m_penalty_constant * y - m_penalty_dampening_constant * vy;
+
+            // Hard constraint
+            m_positions[i] = 0.0;
+
+            if (vy < 0.0) {
+                m_velocities[i] = 0.0; 
+                // Instead of applying force, one could also reflect velocity
+            }
+
         }
     }
 
     // Semi-implicit Euler
-    Eigen::VectorXd acc = m_inverse_mass * f + m_gravity;
+    std::cout << "m_particle_mass: " << m_particle_mass << std::endl;
+    Eigen::VectorXd acc = (1.0 / m_particle_mass) *  m_force + m_gravity_multiplier * m_gravity;
     Eigen::VectorXd dv = dt * acc;
     m_velocities += dv;
-    Eigen::VectorXd dx = dt * dv;
+    Eigen::VectorXd dx = dt * m_velocities;
     m_positions += dx;
 
-
     update_vbo();
+
+    std::cout << "Mass spring simulation step time: " << glfwGetTime() - prev_time << std::endl;
 }
 
 size_t SoftbodyCubeMassSpring::get_index(size_t i, size_t j, size_t k) {
@@ -270,22 +290,12 @@ void SoftbodyCubeMassSpring::reset_cube() {
         }
     }
 
-/*
-    for (auto& spring: m_springs) {
-        std::cout << "(" << std::get<0>(spring) << ", " << std::get<1>(spring) << ", " << std::get<2>(spring) << ")" << std::endl;
-    }
-*/
-    std::cout << "Number of springs: " << m_springs.size() << std::endl;
-
-    // All particles are set to a mass of 1.
-    // TODO: Maybe make this changable in the future
-    m_inverse_mass = Eigen::SparseMatrix<double>(m_num_elements, m_num_elements);
-    m_inverse_mass.setIdentity();
-
     m_gravity = Eigen::VectorXd::Zero(m_num_elements);
     for (size_t i = 1; i < m_num_elements; i += 3) {
         m_gravity(i) = -9.81;
     }
+
+    m_force = Eigen::VectorXd::Zero(m_num_elements);
 
     // RENDERING
 

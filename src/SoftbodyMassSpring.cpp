@@ -1,11 +1,14 @@
 #include "SoftbodyMassSpring.hpp"
 #include <cstring>
 #include <iostream>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 
 SoftbodyMassSpring::SoftbodyMassSpring(Obj* obj, glm::vec3 center, glm::vec3 angles, glm::vec3 scale)
 : m_obj(obj), m_center(center), m_angles(angles), m_scale(scale) {
     
-    reset_cube();
+    reset_object();
     
 }
 
@@ -40,6 +43,7 @@ GLuint SoftbodyMassSpring::get_vao() const {
 
 void SoftbodyMassSpring::simulate(double dt) {
     
+    double prev_time = glfwGetTime();
     // Construct force vector
     Eigen::VectorXd f = Eigen::VectorXd::Zero(m_num_elements);
 
@@ -62,7 +66,9 @@ void SoftbodyMassSpring::simulate(double dt) {
 
         Eigen::Vector3d direction_ij = position_difference / position_difference_norm;
 
-        double spring_force = m_spring_constant * (position_difference_norm - length);
+        double extension = (position_difference_norm - length);
+
+        double spring_force = m_spring_constant_linear * extension + m_spring_constant_cubic * extension * extension * extension;
         double dampening_force = m_dampening_constant * velocity_difference.dot(direction_ij);
 
         Eigen::Vector3d force_ij = (spring_force + dampening_force) * direction_ij;
@@ -75,22 +81,37 @@ void SoftbodyMassSpring::simulate(double dt) {
         double y = m_positions(i);
         double vy = m_velocities(i);
         if (y < 0.0) {
+
+            // Apply force upwards
             f(i) += - m_penalty_constant * y - m_penalty_dampening_constant * vy;
+
+            // Hard constraint
+            m_positions[i] = 0.0;
+
+            if (vy < 0.0) {
+                m_velocities[i] = 0.0; 
+                // Instead of applying force, one could also reflect velocity
+            }
+
         }
     }
 
     // Semi-implicit Euler
-    Eigen::VectorXd acc = m_inverse_mass * f + m_gravity;
+    std::cout << "m_particle_mass: " << m_particle_mass << std::endl;
+    Eigen::VectorXd acc = (1.0 / m_particle_mass) * f + m_gravity_multiplier * m_gravity;
     Eigen::VectorXd dv = dt * acc;
     m_velocities += dv;
-    Eigen::VectorXd dx = dt * dv;
+    Eigen::VectorXd dx = dt * m_velocities;
     m_positions += dx;
 
 
     update_vbo();
+
+    std::cout << "Mass Spring simulation step time: " << glfwGetTime() - prev_time << std::endl;
+    
 }
 
-void SoftbodyMassSpring::reset_cube() {
+void SoftbodyMassSpring::reset_object() {
 
     Eigen::Vector3d e_center;
     e_center << m_center.x, m_center.y, m_center.z;
@@ -118,11 +139,6 @@ void SoftbodyMassSpring::reset_cube() {
     m_springs = m_obj->edges;
 
     std::cout << "Number of springs: " << m_springs.size() << std::endl;
-
-    // All particles are set to a mass of 1.
-    // TODO: Maybe make this changable in the future
-    m_inverse_mass = Eigen::SparseMatrix<double>(m_num_elements, m_num_elements);
-    m_inverse_mass.setIdentity();
 
     m_gravity = Eigen::VectorXd::Zero(m_num_elements);
     for (size_t i = 1; i < m_num_elements; i += 3) {

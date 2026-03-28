@@ -2,6 +2,9 @@
 #include <cstring>
 #include <iostream>
 #include <Eigen/Geometry>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 
 SoftbodyCubeXPBD::SoftbodyCubeXPBD(glm::vec3 center, glm::vec3 angles, double size)
 : m_center(center), m_angles(angles), m_size(size) {
@@ -41,6 +44,7 @@ GLuint SoftbodyCubeXPBD::get_vao() const {
 
 void SoftbodyCubeXPBD::simulate(double dt) {
 
+    double prev_time = glfwGetTime();
     double inverse_stiffness_tilde = m_inverse_stiffness / (dt * dt);
 
     Eigen::VectorXd old_positions = m_positions;
@@ -129,6 +133,9 @@ void SoftbodyCubeXPBD::simulate(double dt) {
     m_velocities = (m_positions - old_positions) / dt;
 
     update_vbo();
+
+    std::cout << "XPBD simulation step time: " << glfwGetTime() - prev_time << std::endl;
+    
 }
 
 size_t SoftbodyCubeXPBD::get_index(size_t i, size_t j, size_t k) {

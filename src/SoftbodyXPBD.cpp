@@ -2,6 +2,9 @@
 #include <cstring>
 #include <iostream>
 #include <Eigen/Geometry>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <random>
 
 SoftbodyXPBD::SoftbodyXPBD(Obj* obj, glm::vec3 center, glm::vec3 angles, glm::vec3 scale)
 : m_obj(obj), m_center(center), m_angles(angles), m_scale(scale) {
@@ -41,22 +44,31 @@ GLuint SoftbodyXPBD::get_vao() const {
 
 void SoftbodyXPBD::simulate(double dt) {
 
+    //double prev_time = glfwGetTime();
+    
+    //std::cout << "m_particle_mass: " << m_particle_mass << std::endl;
+
     double inverse_stiffness_tilde = m_inverse_stiffness / (dt * dt);
 
     Eigen::VectorXd old_positions = m_positions;
-    m_positions = old_positions + dt * m_velocities + dt * dt * m_gravity; // Prediction
-
-    m_lambda = Eigen::VectorXd::Zero(m_num_constraints);
+    m_positions = old_positions + dt * m_velocities + dt * dt * m_gravity_multiplier * m_gravity; // Prediction
+    m_lambda.setZero();
 
     unsigned first, second, third;
     double length;
     Eigen::Vector3d first_pos, second_pos, third_pos;
 
+    std::random_device rd;
+    std::mt19937 gen {rd()};
+    std::shuffle(m_edge_indices.begin(), m_edge_indices.end(), gen);
+
     for(int k = 0; k < m_solver_iterations; k++) {
         // Soft constraints
         if(m_distance_constraint_on) {
             // Distance constraints (simple linear spring constraint |xi - xj| - l_ij)
-            for(int j = 0; j < m_edges.size(); j++) {
+
+            //for(int j = 0; j < m_edges.size(); j++) {
+            for(const auto& j : m_edge_indices) {
                 // Each edge represents one constraint C_j between two particles
                 auto& edge = m_edges[j];
                 first = std::get<0>(edge);
@@ -70,20 +82,20 @@ void SoftbodyXPBD::simulate(double dt) {
                 double Cj = (position_first - position_second).norm() - length;
                 Eigen::Vector3d dCj = (position_first - position_second) / (position_first - position_second).norm();
 
-                // TODO: Other point masses except 1
-                double delta_lambda_j = (- Cj - inverse_stiffness_tilde * m_lambda[j]) / (1 + 1 + inverse_stiffness_tilde); 
-                m_positions.segment(first * 3, 3) += 1 * dCj * delta_lambda_j;
-                m_positions.segment(second * 3, 3) -= 1 * dCj * delta_lambda_j;
+                double delta_lambda_j = (- Cj - inverse_stiffness_tilde * m_lambda[j]) / (2 * (1 / m_particle_mass) + inverse_stiffness_tilde); 
+                m_positions.segment(first * 3, 3) += (1 / m_particle_mass) * dCj * delta_lambda_j;
+                m_positions.segment(second * 3, 3) -= (1 / m_particle_mass) * dCj * delta_lambda_j;
                 m_lambda[j] += delta_lambda_j;
             }
         }
         // Volume constraint
+        
         if(m_volume_constraint_on) {
             double current_volume = calculate_volume();
             double Cj = current_volume - m_goal_volume;
             if (Cj != 0.0) {
 
-                Eigen::MatrixXd dCj = Eigen::MatrixXd(1, m_num_elements);
+                Eigen::MatrixXd dCj = Eigen::MatrixXd::Zero(1, m_num_elements);
                 
                 // Calculate dC/dx
                 for(auto& triangle: m_triangles) {
@@ -102,14 +114,14 @@ void SoftbodyXPBD::simulate(double dt) {
                 }
 
                 // Compute delta lambda denominator
-                double delta_lambda_denom = (dCj * m_inverse_mass * dCj.transpose()).eval().value() + inverse_stiffness_tilde;
-                //double delta_lambda_denom = dCj.dot(m_inverse_mass * dCj) + inverse_stiffness_tilde;
-
+                double delta_lambda_denom = (dCj * (1.0 / m_particle_mass) * dCj.transpose()).eval().value() + inverse_stiffness_tilde;
+                
                 if (delta_lambda_denom != 0.0) {
                     // The first m_edges.size() elements of lambda correspond to the distance constraints
                     // The element after those, which is indexed at m_edges.size(), corresponds to the volume constraint.
-                    double delta_lambda = (-Cj - inverse_stiffness_tilde * m_lambda(m_edges.size())) / delta_lambda_denom; 
-                    m_positions += m_inverse_mass * dCj.transpose() * delta_lambda;
+                    double delta_lambda = (-Cj - inverse_stiffness_tilde * m_lambda(m_edges.size())) / delta_lambda_denom;
+                    m_lambda[m_edges.size()] += delta_lambda;
+                    m_positions += (1.0 / m_particle_mass) * dCj.transpose() * delta_lambda;
                 }
             }
         }
@@ -120,6 +132,9 @@ void SoftbodyXPBD::simulate(double dt) {
             // The velocity is set below.
             if (m_positions[i] < 0.0) {
                 m_positions[i] = 0.0;
+                if (m_velocities[i] < 0.0) {
+                    m_velocities[i] = 0.0;
+                }
             }
         }
     }
@@ -127,6 +142,8 @@ void SoftbodyXPBD::simulate(double dt) {
     m_velocities = (m_positions - old_positions) / dt;
 
     update_vbo();
+
+    //std::cout << "XPBD simulation step time: " << glfwGetTime() - prev_time << std::endl;
 }
 
 size_t SoftbodyXPBD::get_index(size_t i, size_t j, size_t k) {
@@ -201,24 +218,26 @@ void SoftbodyXPBD::reset_object() {
 
     m_velocities = Eigen::VectorXd::Zero(m_num_elements);
 
-    // All particles are set to a mass of 1.
-    // TODO: Maybe make this changable in the future
-    m_inverse_mass = Eigen::SparseMatrix<double>(m_num_elements, m_num_elements);
-    m_inverse_mass.setIdentity();
-
     m_gravity = Eigen::VectorXd::Zero(m_num_elements);
     for (size_t i = 1; i < m_num_elements; i += 3) {
         m_gravity(i) = -9.81;
     }
 
     m_edges = m_obj->edges;
+    
+    m_edge_indices.reserve(m_edges.size());
 
+    for(size_t i = 0; i < m_edges.size(); ++i) {
+        m_edge_indices.push_back(i);
+    }
+    
     m_triangles = m_obj->triangles;
 
     m_num_constraints = m_edges.size() + 1; // num_edges distance constraints + 1 volume constraint
     m_lambda = Eigen::VectorXd::Zero(m_num_constraints);
 
-    m_goal_volume = calculate_volume();
+    m_initial_volume = calculate_volume();
+    m_goal_volume = m_goal_volume_multiplier * m_initial_volume; // needs to be called after storing triangles and starting positions
 
     // RENDERING
 

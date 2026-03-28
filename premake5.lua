@@ -8,8 +8,10 @@ filter("configurations:Release")
     symbols "Off"
 location("build")
 language("C++")
-cppdialect("C++23")
+cppdialect("C++20")
 architecture("x86_64")
+
+--buildoptions { "-std=c++20" }
 
 project("Softbody Simulation")
 kind("ConsoleApp")

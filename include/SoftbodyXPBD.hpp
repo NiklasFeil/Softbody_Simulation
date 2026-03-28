@@ -33,20 +33,24 @@ class SoftbodyXPBD {
         void update_vbo();
 
         Eigen::VectorXd m_gravity;
-        Eigen::SparseMatrix<double> m_inverse_mass;
+        double m_particle_mass = 1.0;
+        double m_gravity_multiplier = 1.0;
 
         int m_num_elements;
         int m_num_constraints;
         unsigned m_grid_dim = 2;
         float m_inverse_stiffness = 0.001;
-        unsigned m_solver_iterations = 15;
+        unsigned m_solver_iterations = 5;
         std::vector<std::tuple<unsigned, unsigned, double>> m_edges; // (particle_i, particle_j, length)
         std::vector<std::tuple<unsigned, unsigned, unsigned>> m_triangles; // (particle_i, particle_j, particle_k)
+        std::vector<size_t> m_edge_indices;
 
         bool m_distance_constraint_on = true;
         bool m_volume_constraint_on = true;
 
+        double m_initial_volume;
         double m_goal_volume;
+        double m_goal_volume_multiplier = 1.0; // initial * mult = goal
 
         size_t get_index(size_t i, size_t j, size_t k);
         double calculate_volume();
@@ -68,6 +72,19 @@ class SoftbodyXPBD {
         void set_distance_constraint_on(bool val);
 
         void set_volume_constraint_on(bool val);
+
+        void set_particle_mass(double val) {
+            m_particle_mass = val;
+        }
+
+        void set_gravity_multiplier(double val) {
+            m_gravity_multiplier = val;
+        }   
+        
+        void set_goal_volume_multiplier(double val) {
+            m_goal_volume_multiplier = val;
+            m_goal_volume = m_initial_volume * m_goal_volume_multiplier;
+        }   
 
         void reset_object();
 
