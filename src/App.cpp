@@ -1,7 +1,6 @@
 #include "App.hpp"
 #include "Global.hpp"
 #include <iostream>
-#include <print>
 
 App::App() {
 

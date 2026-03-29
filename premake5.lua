@@ -6,7 +6,6 @@ filter("configurations:Debug")
 filter("configurations:Release")
     optimize "On"
     symbols "Off"
-location("build")
 language("C++")
 cppdialect("C++20")
 architecture("x86_64")
@@ -15,7 +14,7 @@ architecture("x86_64")
 
 project("Softbody Simulation")
 kind("ConsoleApp")
-location("build/SoftbodySimulation")
+location("build")
 files({
 	"src/*.cpp",
 	"src/*.c",
@@ -27,6 +26,11 @@ includedirs("include_dependencies")
 
 libdirs({ "libs/GLFW" })
 links("glfw3")
+
+--filter("system:linux")
+--    links({ "glfw", "GL", "dl", "pthread", "X11" })
+--    libdirs({"/usr/local/lib" })
+--filter({})
 
 filter("system:linux")
 links({ "dl", "pthread", "X11" }) -- GLFW-Abhängigkeiten

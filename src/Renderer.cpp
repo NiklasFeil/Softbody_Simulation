@@ -1,6 +1,5 @@
 #include "Renderer.hpp"
 #include "Shader.hpp"
-#include <print>
 #include <iostream>
 #include <GLAD/glad.h>
 #include "SoftbodyCubeMassSpring.hpp"

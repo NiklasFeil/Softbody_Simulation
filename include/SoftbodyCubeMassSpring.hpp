@@ -38,11 +38,11 @@ class SoftbodyCubeMassSpring {
         int m_num_elements;
         // Springs (i, j) from i to j, denoting indices in m_positions
         std::vector<std::tuple<unsigned, unsigned, double>> m_springs; // (particle_i, particle_j, length)
-        double m_spring_constant_linear = 1.0;
-        double m_spring_constant_cubic = 1.0;
-        double m_dampening_constant = 1.0;
-        double m_penalty_constant = 1.0;
-        double m_penalty_dampening_constant = 1.0;
+        double m_spring_constant_linear = 5.0;
+        double m_spring_constant_cubic = 5.0;
+        double m_dampening_constant = 5.0;
+        double m_penalty_constant = 5.0;
+        double m_penalty_dampening_constant = 5.0;
 
         Eigen::VectorXd m_force;
 

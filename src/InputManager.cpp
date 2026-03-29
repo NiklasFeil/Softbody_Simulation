@@ -1,7 +1,6 @@
 #include "InputManager.hpp"
 #include "Global.hpp"
 #include <iostream>
-#include <format>
 
 InputManager::InputManager(WindowManager* window_manager) 
 : m_window_manager(window_manager) {
@@ -51,7 +50,6 @@ void InputManager::add_on_press_behaviour(int key, std::function<void()> added_b
                 m_actions_on_press[key].push_back(added_behaviour);
                 break;
             default:
-                //throw std::runtime_error(std::format("Illegitimate callback behaviour: {}!", cb));
                 throw std::runtime_error("Illegitimate callback behaviour!");
         }
     }

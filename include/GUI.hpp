@@ -11,16 +11,16 @@ class GUI {
         const int max_ups = 120;
 
         // Mass Spring System
-        const float min_const = 1000.0f;
-        const float max_const = 100000.0f;
-        const float min_penalty = 1000.0f;
-        const float max_penalty = 100000.0f;
+        const float min_const = 1.0f;
+        const float max_const = 150.0f;
+        const float min_penalty = 1.0f;
+        const float max_penalty = 150.0f;
 
-        float m_spring_constant_linear = 10000.0f;
-        float m_spring_constant_cubic = 10000.0f;
-        float m_dampening_constant = 10000.0f;
-        float m_penalty_constant = 10000.0f;
-        float m_penalty_dampening_constant = 10000.0f;
+        float m_spring_constant_linear = 5.0f;
+        float m_spring_constant_cubic = 5.0f;
+        float m_dampening_constant = 5.0f;
+        float m_penalty_constant = 5.0f;
+        float m_penalty_dampening_constant = 5.0f;
         int m_grid_dim = 3;
 
         // XPBD

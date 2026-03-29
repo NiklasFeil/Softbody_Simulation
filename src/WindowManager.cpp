@@ -11,8 +11,12 @@ WindowManager::WindowManager()
 
     std::cout << "Initializing GLFW..." << std::endl;
     /* Initialize the library */
-    if (!glfwInit())
+    if (!glfwInit()) {
+      const char* description;
+      glfwGetError(&description); 
+      std::cout << "glfwInit failed: " << description << std::endl;
       throw std::runtime_error("GLFW could not be initialized properly");
+    }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
