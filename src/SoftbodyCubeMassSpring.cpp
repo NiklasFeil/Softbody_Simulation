@@ -94,16 +94,27 @@ void SoftbodyCubeMassSpring::simulate(double dt) {
         if (y < 0.0) {
 
             // Apply force upwards
-            m_force(i) += - m_penalty_constant * y - m_penalty_dampening_constant * vy;
+            m_force(i) += /*- m_penalty_constant * y */- m_penalty_dampening_constant * vy;
 
             // Hard constraint
             m_positions[i] = 0.0;
 
-            if (vy < 0.0) {
+           /* if (vy < 0.0) {
                 m_velocities[i] = 0.0; 
                 // Instead of applying force, one could also reflect velocity
-            }
+            }*/
 
+        }
+    }
+
+    // Optional: Apply friction for particles on floor
+    for (int i = 0; i < m_num_elements; i += 3) {
+        
+        if (m_positions[i+1] == 0.0) {
+            Eigen::Vector3d v = m_velocities.segment(i, 3);
+
+            Eigen::Vector3d friction = -m_friction_coefficient * Eigen::Vector3d{v.x(), 0.0, v.z()};
+            m_force.segment(i, 3) += friction;
         }
     }
 

@@ -52,6 +52,7 @@ class SoftbodyCubeMassSpring {
         int m_grabbed_vertex = -1; // No vertex grabbed
         Eigen::Vector3d m_drag_pos; // Position where mouse is dragging the grabbed vertex
 
+        double m_friction_coefficient = 0.5;
         
     public:
         SoftbodyCubeMassSpring(unsigned grid_dim, glm::vec3 center, glm::vec3 angles, double size);
@@ -84,6 +85,9 @@ class SoftbodyCubeMassSpring {
         void set_gravity_multiplier(double val) {
             m_gravity_multiplier = val;
         }   
+        void set_friction(double val) {
+            m_friction_coefficient = val;
+        }
         void set_grid_dim(int val) {
             m_grid_dim = val;
             reset_cube();

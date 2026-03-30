@@ -143,9 +143,8 @@ void SoftbodyXPBD::simulate(double dt) {
 
             double Cj = diff_norm - 0; // length = 0
             Eigen::Vector3d dCj = (goal_pos - vertex_position) / diff_norm;
-            inverse_stiffness_tilde = 0;
 
-            double delta_lambda_j = Cj / ((1 / m_particle_mass) + 0.001 * dt * dt); 
+            double delta_lambda_j = Cj / ((1 / m_particle_mass) + 0.01 * dt * dt); 
             m_positions.segment(m_grabbed_vertex * 3, 3) += (1 / m_particle_mass) * dCj * delta_lambda_j;
             // No need to update lambda, as this constraint is separate
         }
@@ -162,18 +161,21 @@ void SoftbodyXPBD::simulate(double dt) {
 
     m_velocities = (m_positions - old_positions) / dt;
 
+    // Optional: Apply friction for particles on floor
+    for (int i = 0; i < m_num_elements; i += 3) {
+        
+        if (m_positions[i+1] == 0.0) {
+            Eigen::Vector3d v = m_velocities.segment(i, 3);
+
+            m_velocities.segment(i, 3) = Eigen::Vector3d{(1 - m_friction_coefficient) * v.x(), v.y(), (1 - m_friction_coefficient) * v.z()};
+        }
+    }
+
     update_vbo();
 
     //std::cout << "XPBD simulation step time: " << glfwGetTime() - prev_time << std::endl;
 }
 
-size_t SoftbodyXPBD::get_index(size_t i, size_t j, size_t k) {
-    return i + m_grid_dim * j + m_grid_dim * m_grid_dim * k;
-}
-
-unsigned SoftbodyXPBD::get_grid_dim() {
-    return m_grid_dim;
-}
 
 void SoftbodyXPBD::set_inverse_stiffness(float inv_stiff) {
     m_inverse_stiffness = inv_stiff;

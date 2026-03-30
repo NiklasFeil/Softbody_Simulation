@@ -52,13 +52,14 @@ class SoftbodyXPBD {
         double m_goal_volume;
         double m_goal_volume_multiplier = 1.0; // initial * mult = goal
 
-        size_t get_index(size_t i, size_t j, size_t k);
         double calculate_volume();
 
         bool m_is_grabbed = false;
         int m_grabbed_vertex = -1; // No vertex grabbed
         Eigen::Vector3d m_drag_pos; // Position where mouse is dragging the grabbed vertex
         
+        double m_friction_coefficient = 0.5;
+    
     public:
         SoftbodyXPBD(Obj* obj, glm::vec3 center, glm::vec3 angles, glm::vec3 scale);
         ~SoftbodyXPBD();
@@ -89,6 +90,10 @@ class SoftbodyXPBD {
             m_goal_volume_multiplier = val;
             m_goal_volume = m_initial_volume * m_goal_volume_multiplier;
         }   
+
+        void set_friction(double val) {
+            m_friction_coefficient = val;
+        }
 
         void reset_object();
 

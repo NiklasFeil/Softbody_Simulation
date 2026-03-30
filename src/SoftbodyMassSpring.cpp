@@ -89,22 +89,37 @@ void SoftbodyMassSpring::simulate(double dt) {
     }
 
     // Penality force for particles in the floor ( y < 0 )
+    // Multiple possibilities:
+    // 1. Only apply force -> Jittering / Might fall through ground
+    // 2. Clamp pos, reflect velocity_y or set 0 -> Bounce, might not be too accurate
+    // 3. Clamp pos, apply force -> Bounce in force-based way, no falling through ground
     for (size_t i = 1; i < m_positions.size(); i += 3) {
         double y = m_positions(i);
         double vy = m_velocities(i);
         if (y < 0.0) {
 
             // Apply force upwards
-            f(i) += - m_penalty_constant * y - m_penalty_dampening_constant * vy;
+            f(i) += /*- m_penalty_constant * y */- m_penalty_dampening_constant * vy;
 
             // Hard constraint
             m_positions[i] = 0.0;
 
-            if (vy < 0.0) {
+/*            if (vy < 0.0) {
                 m_velocities[i] = 0.0; 
                 // Instead of applying force, one could also reflect velocity
             }
+*/
+        }
+    }
 
+    // Optional: Apply friction for particles on floor
+    for (int i = 0; i < m_num_elements; i += 3) {
+        
+        if (m_positions[i+1] == 0.0) {
+            Eigen::Vector3d v = m_velocities.segment(i, 3);
+
+            Eigen::Vector3d friction = -m_friction_coefficient * Eigen::Vector3d{v.x(), 0.0, v.z()};
+            f.segment(i, 3) += friction;
         }
     }
 
@@ -115,7 +130,6 @@ void SoftbodyMassSpring::simulate(double dt) {
     m_velocities += dv;
     Eigen::VectorXd dx = dt * m_velocities;
     m_positions += dx;
-
 
     update_vbo();
 

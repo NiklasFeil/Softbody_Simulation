@@ -4,7 +4,6 @@
 #include "Solid.hpp"
 #include "SoftbodyCubeMassSpring.hpp"
 #include "SoftbodyMassSpring.hpp"
-#include "SoftbodyCubeXPBD.hpp"
 #include "SoftbodyXPBD.hpp"
 
 class Scene {

@@ -35,6 +35,7 @@ class GUI {
         float min_mass = 0.1, max_mass = 10;
         float m_particle_mass = 1.0;
         float m_gravity_multiplier = 1.0;
+        float m_friction_coefficient = 0.5;
         unsigned m_current_simulation; // 0 -> Mass Spring, 1 -> XPBD
         std::string m_current_object = "cube";
         Scene* m_scene;
