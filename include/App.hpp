@@ -5,6 +5,7 @@
 #include "Renderer.hpp"
 #include "Scene.hpp"
 #include "GUI.hpp"
+#include "Grabber.hpp"
 #include <memory>
 
 class App {
@@ -15,6 +16,7 @@ class App {
     std::unique_ptr<Scene> m_scene;
     std::unique_ptr<Camera> m_camera;
     std::unique_ptr<GUI> m_gui;
+    std::unique_ptr<Grabber> m_grabber;
 
   public:
     App();

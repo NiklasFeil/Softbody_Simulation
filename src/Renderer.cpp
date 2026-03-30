@@ -15,6 +15,14 @@ Renderer::Renderer() {
 
     m_basic_shader_program = std::make_unique<ShaderProgram>(basic_vertex_shader, basic_fragment_shader);    
     m_basic_shader_program->link_program();
+
+    Shader phong_vertex_shader(GL_VERTEX_SHADER, "../shaders/vertex/phong.glsl");
+    Shader phong_fragment_shader(GL_FRAGMENT_SHADER, "../shaders/fragment/phong.glsl");
+    phong_vertex_shader.compile_shader();
+    phong_fragment_shader.compile_shader();
+
+    m_phong_shader_program = std::make_unique<ShaderProgram>(phong_vertex_shader, phong_fragment_shader);    
+    m_phong_shader_program->link_program();
 }
 
 Renderer::~Renderer() {
@@ -34,11 +42,12 @@ void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
     Solid* platform = scene->get_solid(0);
     GLuint platform_vao = platform->get_vao();
 
-    glUseProgram(m_basic_shader_program->get_id());
-    int modelLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "model");
-    int viewLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "view");
-    int projectionLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "projection");
-    int colorLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "color");
+    glUseProgram(m_phong_shader_program->get_id());
+    int modelLoc = glGetUniformLocation(m_phong_shader_program->get_id(), "model");
+    int viewLoc = glGetUniformLocation(m_phong_shader_program->get_id(), "view");
+    int projectionLoc = glGetUniformLocation(m_phong_shader_program->get_id(), "projection");
+    int colorLoc = glGetUniformLocation(m_phong_shader_program->get_id(), "color");
+    int viewPosLoc = glGetUniformLocation(m_phong_shader_program->get_id(), "viewPos");
     glm::vec3 orange = glm::vec3(1.0f, 0.5f, 0.2f);
     glm::vec3 green = glm::vec3(0.2f, 0.6f, 0.2f);
 
@@ -46,11 +55,20 @@ void Renderer::render_mass_spring(Camera* camera, const Scene* scene) {
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera->get_view()));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera->get_projection()));
     glUniform3fv(colorLoc, 1, glm::value_ptr(orange));
+    glUniform3fv(viewPosLoc, 1, glm::value_ptr(camera->get_position()));
 
     glBindVertexArray(platform_vao);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
+    glUseProgram(m_basic_shader_program->get_id());
+    modelLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "model");
+    viewLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "view");
+    projectionLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "projection");
+    colorLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "color");
+    
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera->get_view()));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera->get_projection()));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f))); // "Model matrix" already applied to particle positions
     glUniform3fv(colorLoc, 1, glm::value_ptr(green));
 
@@ -113,11 +131,12 @@ void Renderer::render_XPBD(Camera* camera, const Scene* scene) {
     Solid* platform = scene->get_solid(0);
     GLuint platform_vao = platform->get_vao();
 
-    glUseProgram(m_basic_shader_program->get_id());
-    int modelLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "model");
-    int viewLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "view");
-    int projectionLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "projection");
-    int colorLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "color");
+    glUseProgram(m_phong_shader_program->get_id());
+    int modelLoc = glGetUniformLocation(m_phong_shader_program->get_id(), "model");
+    int viewLoc = glGetUniformLocation(m_phong_shader_program->get_id(), "view");
+    int projectionLoc = glGetUniformLocation(m_phong_shader_program->get_id(), "projection");
+    int colorLoc = glGetUniformLocation(m_phong_shader_program->get_id(), "color");
+    int viewPosLoc = glGetUniformLocation(m_phong_shader_program->get_id(), "viewPos");
     glm::vec3 orange = glm::vec3(1.0f, 0.5f, 0.2f);
     glm::vec3 green = glm::vec3(0.2f, 0.6f, 0.2f);
 
@@ -125,11 +144,20 @@ void Renderer::render_XPBD(Camera* camera, const Scene* scene) {
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera->get_view()));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera->get_projection()));
     glUniform3fv(colorLoc, 1, glm::value_ptr(orange));
+    glUniform3fv(viewPosLoc, 1, glm::value_ptr(camera->get_position()));
 
     glBindVertexArray(platform_vao);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
+    glUseProgram(m_basic_shader_program->get_id());
+    modelLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "model");
+    viewLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "view");
+    projectionLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "projection");
+    colorLoc = glGetUniformLocation(m_basic_shader_program->get_id(), "color");
+    
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera->get_view()));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera->get_projection()));
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f))); // "Model matrix" already applied to particle positions
     glUniform3fv(colorLoc, 1, glm::value_ptr(green));
     

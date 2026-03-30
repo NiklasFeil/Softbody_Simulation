@@ -40,7 +40,7 @@ Scene::Scene(unsigned sim, const char* obj)
         7, 2, 3
     };
 
-    m_solids.push_back(std::make_unique<Solid>(vertices, indices, glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.5f, 5.0f))); 
+    m_solids.push_back(std::make_unique<Solid>(vertices, indices, glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(15.0f, 0.5f, 15.0f))); 
 
     Obj* cube_obj = ObjLoader::load("../models/cube.obj");
     Obj* sphere_obj = ObjLoader::load("../models/sphere.obj");

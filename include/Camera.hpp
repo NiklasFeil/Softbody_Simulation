@@ -31,6 +31,7 @@ class Camera {
 
         glm::mat4 get_view();
         glm::mat4 get_projection();
+        glm::vec3 get_position();
         void update();
 
 

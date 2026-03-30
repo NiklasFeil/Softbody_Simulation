@@ -81,3 +81,7 @@ glm::mat4 Camera::get_view() {
 glm::mat4 Camera::get_projection() {
     return m_projection;
 }
+
+glm::vec3 Camera::get_position() {
+    return m_position;
+}

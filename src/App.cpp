@@ -13,6 +13,7 @@ App::App() {
     m_scene = std::make_unique<Scene>(curr_sim, "cube");
     m_camera = std::make_unique<Camera>();
     m_gui = std::make_unique<GUI>(m_window_manager->getWindow(), m_scene.get(), curr_sim);
+    m_grabber = std::make_unique<Grabber>(m_window_manager->getWindow(), m_camera.get(), m_scene.get());
 }
 
 App::~App() {
@@ -52,6 +53,7 @@ void App::run() {
 
         // Process input
         m_input_manager->process_input(window);
+        m_grabber->check_for_input();        
 
         // Simulation
         double dt = 1. / m_gui->UPDATES_PER_SECOND;

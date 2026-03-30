@@ -13,6 +13,8 @@ class Renderer {
     private:
         void render_object(const Object& object);
         std::unique_ptr<ShaderProgram> m_basic_shader_program;
+        std::unique_ptr<ShaderProgram> m_phong_shader_program;
+
 
         glm::mat4 m_projection;
         glm::mat4 m_view;

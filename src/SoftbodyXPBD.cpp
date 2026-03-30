@@ -130,6 +130,26 @@ void SoftbodyXPBD::simulate(double dt) {
             }
         }
 
+        // Grabbing constraint (Distance constraint of the dragged vertex with mouse position)
+        if (m_is_grabbed && m_grabbed_vertex != -1) {
+            Eigen::Vector3d vertex_position = m_positions.segment(3 * m_grabbed_vertex, 3);
+            Eigen::Vector3d goal_pos = m_drag_pos;
+
+            std::cout << "goal_pos: (" << goal_pos.x() << ", " << goal_pos.y() << ", " << goal_pos.z() << ")" << std::endl;
+
+            double diff_norm = (goal_pos - vertex_position).norm();
+
+            if (diff_norm < 1e-7) continue; // Prevent some weird behaviours because of division
+
+            double Cj = diff_norm - 0; // length = 0
+            Eigen::Vector3d dCj = (goal_pos - vertex_position) / diff_norm;
+            inverse_stiffness_tilde = 0;
+
+            double delta_lambda_j = Cj / ((1 / m_particle_mass) + 0.001 * dt * dt); 
+            m_positions.segment(m_grabbed_vertex * 3, 3) += (1 / m_particle_mass) * dCj * delta_lambda_j;
+            // No need to update lambda, as this constraint is separate
+        }
+        
         // Hard constraints (Ground)
         for(int i = 1; i < m_num_elements; i += 3) {
             // Check every y-coordinate and set it to the ground.
@@ -284,4 +304,23 @@ size_t SoftbodyXPBD::get_number_of_vertices() {
 
 size_t SoftbodyXPBD::get_number_of_indices() {
     return m_indices.size();
+}
+
+const Eigen::VectorXd& SoftbodyXPBD::get_positions() const {
+    return m_positions;
+}
+
+void SoftbodyXPBD::grab(int grabbed_vertex, Eigen::Vector3d goal_pos) {
+    m_is_grabbed = true;
+    m_grabbed_vertex = grabbed_vertex;
+    m_drag_pos = goal_pos;
+}
+
+void SoftbodyXPBD::update_grab_goal(Eigen::Vector3d goal_pos) {
+    m_drag_pos = goal_pos;
+}
+
+void SoftbodyXPBD::ungrab() {
+    m_is_grabbed = false;
+    m_grabbed_vertex = -1;
 }

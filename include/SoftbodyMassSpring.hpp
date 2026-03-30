@@ -90,4 +90,8 @@ class SoftbodyMassSpring {
         size_t get_number_of_vertices();
 
         size_t get_number_of_indices();
+
+        const Eigen::VectorXd& get_positions() const;
+
+        void change_position(unsigned v, Eigen::Vector3d new_pos);
     };

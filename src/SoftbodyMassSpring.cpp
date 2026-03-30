@@ -190,3 +190,12 @@ size_t SoftbodyMassSpring::get_number_of_vertices() {
 size_t SoftbodyMassSpring::get_number_of_indices() {
     return m_indices.size();
 }
+
+const Eigen::VectorXd& SoftbodyMassSpring::get_positions() const {
+    return m_positions;
+}
+
+void SoftbodyMassSpring::change_position(unsigned v, Eigen::Vector3d new_pos) {
+    // v is the vertex whose position should change
+    m_positions.segment(3 * v, 3) = new_pos;
+}

@@ -335,3 +335,7 @@ void SoftbodyCubeMassSpring::reset_cube() {
     glBindVertexArray(0); // Unbind VAO again
 
 }
+
+const Eigen::VectorXd& SoftbodyCubeMassSpring::get_positions() const {
+    return m_positions;
+}

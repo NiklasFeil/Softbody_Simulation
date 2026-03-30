@@ -67,5 +67,4 @@ void InputManager::process_input(GLFWwindow* window) {
             }
         }
     }
-
 }

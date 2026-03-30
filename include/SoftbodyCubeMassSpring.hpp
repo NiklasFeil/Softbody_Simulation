@@ -84,4 +84,6 @@ class SoftbodyCubeMassSpring {
             reset_cube();
         }
         void reset_cube();
+
+        const Eigen::VectorXd& get_positions() const;
     };
