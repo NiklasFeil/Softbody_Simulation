@@ -65,7 +65,8 @@ void Grabber::check_for_input() {
                         return;
                     }
                     std::cout << "Clicked vertex: " << m_grabbed_vertex << std::endl;
-                    softbody->change_position(m_grabbed_vertex, new_pos);
+                    //softbody->change_position(m_grabbed_vertex, new_pos);
+                    softbody->grab(m_grabbed_vertex, new_pos);
                 }
                 else if (curr_obj == "adaptable_cube") {
                     SoftbodyCubeMassSpring* softbody_cube = m_scene->get_sb_cube_ms();
@@ -90,7 +91,7 @@ void Grabber::check_for_input() {
                         return;
                     }
                     std::cout << "Clicked vertex: " << m_grabbed_vertex << std::endl;
-                    
+                    softbody_cube->grab(m_grabbed_vertex, new_pos);
                 }
                 break;
             case 1: // XPBD
@@ -133,39 +134,21 @@ void Grabber::check_for_input() {
         switch (curr_sim) {
             case 0: // MassSpring
                 if (curr_obj == "cube" || curr_obj == "sphere" || curr_obj == "detailed_sphere") {
-                    /*SoftbodyMassSpring* softbody = m_scene->get_sb_obj_ms(curr_obj);
+                    SoftbodyMassSpring* softbody = m_scene->get_sb_obj_ms(curr_obj);
                     Eigen::VectorXd positions = softbody->get_positions();
                     // Find goal position with currently grabbed vertex
                     std::cout << "Grabbed vertex: " << m_grabbed_vertex << std::endl;
-                    get_ray_point_distance_and_ray_point(ray, positions.segment(3 * m_grabbed_vertex, 3);
-                    
-                    softbody->change_position(closest_vertex, new_pos);*/
+                    auto temp = get_ray_point_distance_and_ray_point(ray, positions.segment(3 * m_grabbed_vertex, 3));
+                    Eigen::Vector3d new_goal = temp.first;
+                    softbody->update_grab_goal(new_goal);
                 }
                 else if (curr_obj == "adaptable_cube") {
-                    /*SoftbodyCubeMassSpring* softbody_cube = m_scene->get_sb_cube_ms();
+                    SoftbodyCubeMassSpring* softbody_cube = m_scene->get_sb_cube_ms();
                     Eigen::VectorXd positions = softbody_cube->get_positions();
                     // Check what vertex is closest to the ray / player's click
-                    int closest_vertex = -1;
-                    double min_dist = 0.3;
-                    Eigen::Vector3d new_pos;
-                    for (int i = 0; i < positions.size(); i += 3) {
-                        Eigen::Vector3d pos = positions.segment(i, 3);
-                        auto temp = get_ray_point_distance_and_ray_point(ray, pos);
-                        Eigen::Vector3d ray_point = temp.first;
-                        double dist = temp.second;
-                        //std::cout << "Distance of vertex " << i/3 << ": " << dist << std::endl;
-                        if (dist < min_dist) {
-                            min_dist = dist;
-                            closest_vertex = i / 3;
-                            new_pos = ray_point;
-                        }
-                    }
-                    if (closest_vertex == -1) {
-                        std::cout << "No vertex clicked" << std::endl;
-                        return;
-                    }
-                    std::cout << "Clicked vertex: " << closest_vertex << std::endl;
-                    */
+                    auto temp = get_ray_point_distance_and_ray_point(ray, positions.segment(3 * m_grabbed_vertex, 3));
+                    Eigen::Vector3d new_goal = temp.first;
+                    softbody_cube->update_grab_goal(new_goal);
                 }
                 break;
             case 1: // XPBD
@@ -190,10 +173,11 @@ void Grabber::check_for_input() {
             case 0: // MassSpring
                 if (curr_obj == "cube" || curr_obj == "sphere" || curr_obj == "detailed_sphere") {
                     SoftbodyMassSpring* softbody = m_scene->get_sb_obj_ms(curr_obj);
-                    //softbody->ungrab();
+                    softbody->ungrab();
                 }
                 else if (curr_obj == "adaptable_cube") {
-                    
+                    SoftbodyCubeMassSpring* softbody_cube = m_scene->get_sb_cube_ms();
+                    softbody_cube->ungrab();
                 }
                 break;
             case 1: // XPBD

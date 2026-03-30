@@ -48,6 +48,10 @@ class SoftbodyMassSpring {
         double m_penalty_dampening_constant = 5.0;
 
         size_t get_index(size_t i, size_t j, size_t k);
+
+        bool m_is_grabbed = false;
+        int m_grabbed_vertex = -1; // No vertex grabbed
+        Eigen::Vector3d m_drag_pos; // Position where mouse is dragging the grabbed vertex
         
     public:
         SoftbodyMassSpring(Obj* obj, glm::vec3 center, glm::vec3 angles, glm::vec3 scale);
@@ -94,4 +98,10 @@ class SoftbodyMassSpring {
         const Eigen::VectorXd& get_positions() const;
 
         void change_position(unsigned v, Eigen::Vector3d new_pos);
+
+        void grab(int grabbed_vertex, Eigen::Vector3d goal_pos);
+
+        void update_grab_goal(Eigen::Vector3d goal_pos);
+
+        void ungrab();
     };

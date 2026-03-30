@@ -23,7 +23,7 @@ class Camera {
 
         float m_phi;
         float m_theta;
-        float m_radius = 10.0f;
+        float m_radius = 20.0f;
 
     public:
         Camera();

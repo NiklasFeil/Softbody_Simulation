@@ -76,6 +76,18 @@ void SoftbodyMassSpring::simulate(double dt) {
         f.segment(j * 3, 3) += -force_ij;
     }
 
+    // Grabbing mechanic
+    if (m_is_grabbed && m_grabbed_vertex != -1) {
+        // Simply set position at mouse and set velocity zero (If you do not set it zero, it accumulates velocity infinitely). 
+        // Also possible to apply force, but that might be more unstable.
+        // Important to do this before applying ground collision, otherwise we might set position to be underground.
+       
+        m_positions.segment(m_grabbed_vertex * 3, 3) = m_drag_pos;
+
+        m_velocities.segment(m_grabbed_vertex * 3, 3) = Eigen::Vector3d::Zero();
+    
+    }
+
     // Penality force for particles in the floor ( y < 0 )
     for (size_t i = 1; i < m_positions.size(); i += 3) {
         double y = m_positions(i);
@@ -97,7 +109,7 @@ void SoftbodyMassSpring::simulate(double dt) {
     }
 
     // Semi-implicit Euler
-    std::cout << "m_particle_mass: " << m_particle_mass << std::endl;
+    //std::cout << "m_particle_mass: " << m_particle_mass << std::endl;
     Eigen::VectorXd acc = (1.0 / m_particle_mass) * f + m_gravity_multiplier * m_gravity;
     Eigen::VectorXd dv = dt * acc;
     m_velocities += dv;
@@ -198,4 +210,19 @@ const Eigen::VectorXd& SoftbodyMassSpring::get_positions() const {
 void SoftbodyMassSpring::change_position(unsigned v, Eigen::Vector3d new_pos) {
     // v is the vertex whose position should change
     m_positions.segment(3 * v, 3) = new_pos;
+}
+
+void SoftbodyMassSpring::grab(int grabbed_vertex, Eigen::Vector3d goal_pos) {
+    m_is_grabbed = true;
+    m_grabbed_vertex = grabbed_vertex;
+    m_drag_pos = goal_pos;
+}
+
+void SoftbodyMassSpring::update_grab_goal(Eigen::Vector3d goal_pos) {
+    m_drag_pos = goal_pos;
+}
+
+void SoftbodyMassSpring::ungrab() {
+    m_is_grabbed = false;
+    m_grabbed_vertex = -1;
 }

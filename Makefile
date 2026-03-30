@@ -27,11 +27,11 @@ all: $(PROJECTS)
 Softbody\ Simulation:
 ifneq (,$(Softbody_Simulation_config))
 	@echo "==== Building Softbody Simulation ($(Softbody_Simulation_config)) ===="
-	@${MAKE} --no-print-directory -C build/SoftbodySimulation -f Makefile config=$(Softbody_Simulation_config)
+	@${MAKE} --no-print-directory -C build -f Makefile config=$(Softbody_Simulation_config)
 endif
 
 clean:
-	@${MAKE} --no-print-directory -C build/SoftbodySimulation -f Makefile clean
+	@${MAKE} --no-print-directory -C build -f Makefile clean
 
 help:
 	@echo "Usage: make [config=name] [target]"
