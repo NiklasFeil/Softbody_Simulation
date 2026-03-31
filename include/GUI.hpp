@@ -21,6 +21,7 @@ class GUI {
         float m_dampening_constant = 5.0f;
         float m_penalty_constant = 5.0f;
         float m_penalty_dampening_constant = 5.0f;
+        float m_friction_coefficient_ms = 0.5;
         int m_grid_dim = 3;
 
         // XPBD
@@ -31,11 +32,11 @@ class GUI {
         float m_goal_volume_multiplier = 1.0;
         bool m_distance_constraint_on = true;
         bool m_volume_constraint_on = true;
+        float m_friction_coefficient_xpbd = 0.5;
 
         float min_mass = 0.1, max_mass = 10;
         float m_particle_mass = 1.0;
         float m_gravity_multiplier = 1.0;
-        float m_friction_coefficient = 0.5;
         unsigned m_current_simulation; // 0 -> Mass Spring, 1 -> XPBD
         std::string m_current_object = "cube";
         Scene* m_scene;

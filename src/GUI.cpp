@@ -73,14 +73,11 @@ void GUI::start_frame() {
             if(ImGui::SliderInt("grid dim", &m_grid_dim, 2, 4)) {
                 m_scene->get_sb_cube_ms()->set_grid_dim(m_grid_dim);
             }
-            if(ImGui::SliderFloat("friction", &m_friction_coefficient, 0.0, 1.0)) {
-                m_scene->get_sb_cube_ms()->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_ms("cube")->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_ms("sphere")->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_ms("detailed_sphere")->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_xpbd("cube")->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_xpbd("sphere")->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_xpbd("detailed_sphere")->set_friction(m_friction_coefficient);
+            if(ImGui::SliderFloat("friction", &m_friction_coefficient_ms, 0.0, 5.0)) {
+                m_scene->get_sb_cube_ms()->set_friction(m_friction_coefficient_ms);
+                m_scene->get_sb_obj_ms("cube")->set_friction(m_friction_coefficient_ms);
+                m_scene->get_sb_obj_ms("sphere")->set_friction(m_friction_coefficient_ms);
+                m_scene->get_sb_obj_ms("detailed_sphere")->set_friction(m_friction_coefficient_ms);
             }
             if(ImGui::SliderFloat("particle mass", &m_particle_mass, min_mass, max_mass)) {
                 m_scene->get_sb_cube_ms()->set_particle_mass(m_particle_mass);
@@ -112,14 +109,10 @@ void GUI::start_frame() {
                 m_scene->get_sb_obj_xpbd("sphere")->set_solver_iterations(m_solver_iterations);
                 m_scene->get_sb_obj_xpbd("detailed_sphere")->set_solver_iterations(m_solver_iterations);
             }
-            if(ImGui::SliderFloat("friction", &m_friction_coefficient, 0.0, 1.0)) {
-                m_scene->get_sb_cube_ms()->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_ms("cube")->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_ms("sphere")->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_ms("detailed_sphere")->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_xpbd("cube")->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_xpbd("sphere")->set_friction(m_friction_coefficient);
-                m_scene->get_sb_obj_xpbd("detailed_sphere")->set_friction(m_friction_coefficient);
+            if(ImGui::SliderFloat("friction", &m_friction_coefficient_xpbd, 0.0, 1.0)) {
+                m_scene->get_sb_obj_xpbd("cube")->set_friction(m_friction_coefficient_xpbd);
+                m_scene->get_sb_obj_xpbd("sphere")->set_friction(m_friction_coefficient_xpbd);
+                m_scene->get_sb_obj_xpbd("detailed_sphere")->set_friction(m_friction_coefficient_xpbd);
             }
             if(ImGui::SliderFloat("particle mass", &m_particle_mass, min_mass, max_mass)) {
                 m_scene->get_sb_cube_ms()->set_particle_mass(m_particle_mass);
