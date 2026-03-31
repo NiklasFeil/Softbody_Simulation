@@ -119,7 +119,6 @@ void SoftbodyCubeMassSpring::simulate(double dt) {
     }
 
     // Semi-implicit Euler
-    std::cout << "m_particle_mass: " << m_particle_mass << std::endl;
     Eigen::VectorXd acc = (1.0 / m_particle_mass) *  m_force + m_gravity_multiplier * m_gravity;
     Eigen::VectorXd dv = dt * acc;
     m_velocities += dv;
@@ -347,7 +346,6 @@ void SoftbodyCubeMassSpring::reset_cube() {
     glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(float), m_vertices.data(), GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-    std::cout << "m_indices.size(): " << m_indices.size() << std::endl;
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(int), m_indices.data(), GL_STATIC_DRAW);
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0); // TODO: This will need to be generalized

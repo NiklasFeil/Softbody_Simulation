@@ -44,10 +44,8 @@ GLuint SoftbodyXPBD::get_vao() const {
 
 void SoftbodyXPBD::simulate(double dt) {
 
-    //double prev_time = glfwGetTime();
+    double prev_time = glfwGetTime();
     
-    //std::cout << "m_particle_mass: " << m_particle_mass << std::endl;
-
     double inverse_stiffness_tilde = m_inverse_stiffness / (dt * dt);
 
     Eigen::VectorXd old_positions = m_positions;
@@ -135,8 +133,6 @@ void SoftbodyXPBD::simulate(double dt) {
             Eigen::Vector3d vertex_position = m_positions.segment(3 * m_grabbed_vertex, 3);
             Eigen::Vector3d goal_pos = m_drag_pos;
 
-            std::cout << "goal_pos: (" << goal_pos.x() << ", " << goal_pos.y() << ", " << goal_pos.z() << ")" << std::endl;
-
             double diff_norm = (goal_pos - vertex_position).norm();
 
             if (diff_norm < 1e-7) continue; // Prevent some weird behaviours because of division
@@ -173,7 +169,7 @@ void SoftbodyXPBD::simulate(double dt) {
 
     update_vbo();
 
-    //std::cout << "XPBD simulation step time: " << glfwGetTime() - prev_time << std::endl;
+    std::cout << "XPBD simulation step time: " << glfwGetTime() - prev_time << std::endl;
 }
 
 

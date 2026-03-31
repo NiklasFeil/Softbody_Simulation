@@ -124,7 +124,6 @@ void SoftbodyMassSpring::simulate(double dt) {
     }
 
     // Semi-implicit Euler
-    //std::cout << "m_particle_mass: " << m_particle_mass << std::endl;
     Eigen::VectorXd acc = (1.0 / m_particle_mass) * f + m_gravity_multiplier * m_gravity;
     Eigen::VectorXd dv = dt * acc;
     m_velocities += dv;
@@ -163,8 +162,6 @@ void SoftbodyMassSpring::reset_object() {
 
     // Construct springs. 
     m_springs = m_obj->edges;
-
-    std::cout << "Number of springs: " << m_springs.size() << std::endl;
 
     m_gravity = Eigen::VectorXd::Zero(m_num_elements);
     for (size_t i = 1; i < m_num_elements; i += 3) {

@@ -35,7 +35,6 @@ void Grabber::check_for_input() {
         glfwGetCursorPos(m_window, &xpos, &ypos);
         //std::cout << "Create ray cast" << std::endl;
         Ray ray = calculate_ray_from_mouse_pos(xpos, ypos);
-        std::cout << "Ray: Origin: (" << ray.origin.x() << ", " << ray.origin.y() << ", " << ray.origin.z() << "), Dir: (" << ray.dir.x() << ", " << ray.dir.y() << ", " << ray.dir.z() << ")" << std::endl; 
         //std::cout << "Ray cast succeeded" << std::endl;
         std::string curr_obj = m_scene->get_current_object(); // "cube", "sphere", "detailed_sphere" or "adaptable_cube" (last only for MassSpring)
         unsigned curr_sim = m_scene->get_current_sim(); // 0 -> MassSpring, 1 -> XPBD
@@ -61,10 +60,8 @@ void Grabber::check_for_input() {
                         }
                     }
                     if (m_grabbed_vertex == -1) {
-                        std::cout << "No vertex clicked" << std::endl;
                         return;
                     }
-                    std::cout << "Clicked vertex: " << m_grabbed_vertex << std::endl;
                     //softbody->change_position(m_grabbed_vertex, new_pos);
                     softbody->grab(m_grabbed_vertex, new_pos);
                 }
@@ -87,10 +84,8 @@ void Grabber::check_for_input() {
                         }
                     }
                     if (m_grabbed_vertex == -1) {
-                        std::cout << "No vertex clicked" << std::endl;
                         return;
                     }
-                    std::cout << "Clicked vertex: " << m_grabbed_vertex << std::endl;
                     softbody_cube->grab(m_grabbed_vertex, new_pos);
                 }
                 break;
@@ -113,10 +108,8 @@ void Grabber::check_for_input() {
                     }
                 }
                 if (m_grabbed_vertex == -1) {
-                    std::cout << "No vertex clicked" << std::endl;
                     return;
                 }
-                std::cout << "Clicked vertex: " << m_grabbed_vertex << std::endl;
                 softbody->grab(m_grabbed_vertex, new_pos);
                 break;
         }
@@ -126,8 +119,7 @@ void Grabber::check_for_input() {
         // Updates the goal position of the grabbed vertex
         double xpos, ypos;
         glfwGetCursorPos(m_window, &xpos, &ypos);
-        Ray ray = calculate_ray_from_mouse_pos(xpos, ypos);
-        std::cout << "Ray: Origin: (" << ray.origin.x() << ", " << ray.origin.y() << ", " << ray.origin.z() << ")" << std::endl; 
+        Ray ray = calculate_ray_from_mouse_pos(xpos, ypos); 
         std::string curr_obj = m_scene->get_current_object(); // "cube", "sphere", "detailed_sphere" or "adaptable_cube" (last only for MassSpring)
         unsigned curr_sim = m_scene->get_current_sim(); // 0 -> MassSpring, 1 -> XPBD
 
@@ -137,7 +129,6 @@ void Grabber::check_for_input() {
                     SoftbodyMassSpring* softbody = m_scene->get_sb_obj_ms(curr_obj);
                     Eigen::VectorXd positions = softbody->get_positions();
                     // Find goal position with currently grabbed vertex
-                    std::cout << "Grabbed vertex: " << m_grabbed_vertex << std::endl;
                     auto temp = get_ray_point_distance_and_ray_point(ray, positions.segment(3 * m_grabbed_vertex, 3));
                     Eigen::Vector3d new_goal = temp.first;
                     softbody->update_grab_goal(new_goal);
@@ -155,10 +146,8 @@ void Grabber::check_for_input() {
                 SoftbodyXPBD* softbody = m_scene->get_sb_obj_xpbd(curr_obj);
                 Eigen::VectorXd positions = softbody->get_positions();
                 // Find goal position with currently grabbed vertex
-                std::cout << "Grabbed vertex: " << m_grabbed_vertex << std::endl;
                 auto temp = get_ray_point_distance_and_ray_point(ray, positions.segment(3 * m_grabbed_vertex, 3));
                 Eigen::Vector3d new_goal = temp.first;
-                std::cout << "Clicked vertex: " << m_grabbed_vertex << std::endl;
                 softbody->update_grab_goal(new_goal);
                 break;
         }
